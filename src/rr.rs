@@ -1,6 +1,31 @@
 use std::fmt;
+use num::FromPrimitive;
 
 use crate::utils::{bytes_to_name_offset, extract_name, byte_combine};
+
+enum_from_primitive! {
+#[derive(Debug, PartialEq)]
+pub enum RRType {
+    A = 1,  // RFC1035
+    NS = 2, // RFC1035
+    CNAME = 5,  // RFC1035
+    SOA = 6,  // RFC1035 RFC2038
+    PTR = 12,  // RFC1035
+    MX = 15, // RFC1035 RFC7505
+    TXT = 16, // RFC1035
+}
+}
+
+enum_from_primitive! {
+#[derive(Debug, PartialEq)]
+pub enum Class {
+    IN = 1,
+    CS = 2,
+    CH = 3,
+    HS = 4
+}
+}
+
 
 fn extract_ttl(bytes: &[u8], offset: usize) -> i32 {
     (16 * 16 * (byte_combine(bytes[offset], bytes[offset + 1]) as i32)
@@ -9,8 +34,8 @@ fn extract_ttl(bytes: &[u8], offset: usize) -> i32 {
 
 pub struct RR {
     name: Vec<String>,
-    rrtype: u16,
-    class: u16,
+    rrtype: RRType,
+    class: Class,
     ttl: i32,
     rdlength: u16,
     rdata: Vec<u8>,
@@ -34,9 +59,10 @@ impl RR {
             panic!("it's an error: name type {:#b}", name_type);
         }
 
-        let rrtype = byte_combine(buf[offset], buf[offset + 1]);
+        // XXX: do we really want to unwrap here?!
+        let rrtype = RRType::from_u16(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
-        let class = byte_combine(buf[offset], buf[offset + 1]);
+        let class = Class::from_u16(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
         let ttl = extract_ttl(buf, offset);
         offset += 4;
@@ -65,7 +91,7 @@ impl fmt::Display for RR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}\tRRTYPE: {:?}; CLASS: {:?}, TTL: {:?}, RDLEN: {:?}\n\t{:?}",
+            "{}\t{:?}\t{:?}\tTTL: {:?}, RDLEN: {:?}\n\t{:?}",
             self.name.join("."),
             self.rrtype,
             self.class,
