@@ -170,7 +170,7 @@ fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> (Vec<RR>, usize) {
         let (rr, l_idx) = RR::from_wire(buf, idx);
         rrset.push(rr);
         idx = l_idx;
-        processed_rrs = processed_rrs + 1;
+        processed_rrs += 1;
     }
     (rrset, idx) // index of next section
 }

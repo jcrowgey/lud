@@ -56,7 +56,7 @@ impl RR {
             name.append(&mut ref_name);
             offset = ref_idx;
         } else {
-            panic!("it's an error: name type {:#b}", name_type);
+            panic!("Unimplemented name type: {:#b}", name_type);
         }
 
         // XXX: do we really want to unwrap here?!
@@ -70,9 +70,6 @@ impl RR {
         offset += 2;
 
         let mut rdata = buf[offset..offset + rdlength].to_owned();
-        for byte in buf[offset..offset+ rdlength].iter() {
-            rdata.push(*byte);
-        }
 
         let rr = RR {
             name: name,
@@ -91,7 +88,7 @@ fn format_rdata(rr: &RR) -> String {
     let mut rdata_fmt = String::new();
     match rr.rrtype {
         RRType::A => {
-            let mut todo = rr.rdlength / 2;
+            let mut todo = rr.rdlength / 4; // 4 bytes per IPv4
             let mut idx = 0;
             while todo > 0 {
                 let mut sep = "";
