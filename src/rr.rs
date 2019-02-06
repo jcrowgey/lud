@@ -87,17 +87,46 @@ impl RR {
     }
 }
 
+fn format_rdata(rr: &RR) -> String {
+    let mut rdata_fmt = String::new();
+    match rr.rrtype {
+        RRType::A => {
+            let mut todo = rr.rdlength / 2;
+            let mut idx = 0;
+            while todo > 0 {
+                let mut sep = "";
+                for byte in rr.rdata[idx..idx+4].iter() {
+                    rdata_fmt.push_str(sep);
+                    rdata_fmt.push_str(&byte.to_string());
+                    sep = ".";
+                }
+                rdata_fmt.push_str("\n");
+                idx += 4;
+                todo -= 1;
+            }
+        },
+        _ => {
+            for byte in rr.rdata.iter() {
+                rdata_fmt.push_str(&byte.to_string());
+            }
+        }
+    }
+    rdata_fmt
+}
+
 impl fmt::Display for RR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let rdata_fmt = format_rdata(&self);
+
         write!(
             f,
-            "{}\t{:?}\t{:?}\tTTL: {:?}, RDLEN: {:?}\n\t{:?}",
+            "{}\t{:?}\t{:?}\tTTL: {:?}, RDLEN: {:?}\n{}",
             self.name.join("."),
             self.rrtype,
             self.class,
             self.ttl,
             self.rdlength,
-            self.rdata
+            rdata_fmt
         )
     }
 }
