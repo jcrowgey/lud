@@ -9,8 +9,8 @@ pub struct Question {
 
 impl Question {
     pub fn from_wire(wire: &[u8], mut offset: usize) -> (Question, usize) {
-        let (qname, loffset) = extract_name(wire, offset);
-        offset = loffset;
+        let (qname, l_offset) = extract_name(wire, offset);
+        offset = l_offset;
         let qtype = byte_combine(wire[offset + 1], wire[offset]);
         offset += 2;
         let qclass = byte_combine(wire[offset + 1], wire[offset]);

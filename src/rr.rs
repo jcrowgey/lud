@@ -52,9 +52,9 @@ impl RR {
             name.append(&mut ref_name);
             offset += 2;
         } else if name_type == 0 {
-            let (mut ref_name, ref_idx) = extract_name(buf, offset);
+            let (mut ref_name, new_offset) = extract_name(buf, offset);
             name.append(&mut ref_name);
-            offset = ref_idx;
+            offset = new_offset;
         } else {
             panic!("Unimplemented name type: {:#b}", name_type);
         }
@@ -69,7 +69,7 @@ impl RR {
         let rdlength = byte_combine(buf[offset], buf[offset + 1]) as usize;
         offset += 2;
 
-        let mut rdata = buf[offset..offset + rdlength].to_owned();
+        let mut rdata = buf[offset .. offset+rdlength].to_owned();
 
         let rr = RR {
             name: name,

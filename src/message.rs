@@ -119,6 +119,7 @@ impl fmt::Display for Message {
 
 impl Message {
     pub fn from_wire(buf: [u8; DNS_MSG_MAX], len: usize) -> Message {
+
         let mut m_reply: &[u8] = &buf[..len];
         let mut message = Message {
             id: m_reply.read_u16::<BigEndian>().unwrap(),
@@ -176,16 +177,13 @@ fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> (Vec<RR>, usize) {
 }
 
 fn extract_questions(reply: &[u8], mut offset: usize, qdcount: u16) -> (Vec<Question>, usize) {
-    let mut qnames_processed = 0;
+    let mut questions_processed = 0;
     let mut questions: Vec<Question> = Vec::new();
-    loop {
+    while questions_processed < qdcount {
         let (question, l_offset) = Question::from_wire(reply, offset);
         offset = l_offset;
         questions.push(question);
-        qnames_processed += 1;
-        if qnames_processed == qdcount {
-            break;
-        }
+        questions_processed += 1;
     }
-    (questions, offset + 1) // offset is index of next section
+    (questions, offset) // offset is index of next section
 }

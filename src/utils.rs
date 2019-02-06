@@ -11,7 +11,9 @@ pub fn extract_name(bytes: &[u8], mut offset: usize) -> (Vec<String>, usize) {
     let mut name = Vec::new();
     loop {
         let label_len = bytes[offset] as usize;
+
         if label_len == 0 {
+            offset += 1;
             break;
         }
         if (label_len >> 6) == 3 {
