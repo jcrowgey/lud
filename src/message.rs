@@ -83,8 +83,7 @@ pub struct Message {
 
 impl fmt::Display for Message {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut to_write = String::new();
-        to_write = format!(
+        let mut to_write = format!(
             "ID: {}\n{}\nQDCOUNT {}; ANCOUNT {}; NSCOUNT {}; ARCOUNT {}",
             self.id, self.meta, self.qdcount, self.ancount, self.nscount, self.arcount
         );

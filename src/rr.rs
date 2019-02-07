@@ -69,15 +69,13 @@ impl RR {
         let rdlength = byte_combine(buf[offset], buf[offset + 1]) as usize;
         offset += 2;
 
-        let mut rdata = buf[offset .. offset+rdlength].to_owned();
-
         let rr = RR {
             name: name,
             rrtype: rrtype,
             class: class,
             ttl: ttl,
             rdlength: rdlength as u16,
-            rdata: rdata,
+            rdata: buf[offset .. offset+rdlength].to_owned(),
         };
         offset += rdlength;
         (rr, offset)
