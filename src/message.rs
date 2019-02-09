@@ -12,7 +12,7 @@ pub const DNS_MSG_MAX: usize = 512;
 // I think the numeric values are superfluous,
 // because they're indexed from 0 in sequence, but not sure
 enum_from_primitive! {
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum RCode {
     NOERROR = 0,
     FORMAT_ERROR = 1,
@@ -25,7 +25,7 @@ pub enum RCode {
 }
 
 enum_from_primitive! {
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum QR {
     Q = 0,
     R = 1
@@ -55,6 +55,20 @@ impl MessageMeta {
             z: ((meta >> 4) & 0b111) as u8,
             rcode: RCode::from_u16(meta & 0b1111).unwrap(),
         }
+    }
+
+    fn to_wire(&self) -> Vec<u8> {
+        let mut byte_1 = (*&self.qr as u8) << 8;
+        byte_1 += self.opcode << 3;
+        byte_1 += (self.aa as u8) << 2;
+        byte_1 += (self.tc as u8) << 1;
+        byte_1 += self.rd as u8;
+
+        let mut byte_2 = (*&self.ra as u8) << 7;
+        byte_2 += (self.z as u8) << 2;
+        byte_2 += *&self.rcode as u8;
+
+        vec![byte_1, byte_2]
     }
 }
 
@@ -143,6 +157,30 @@ impl Message {
         message.authority = authority;
         message.additional = additional;
         message
+    }
+
+    pub fn to_wire(&self) -> Vec<u8> {
+        let mut wire = Vec::new();
+        wire.push((self.id >> 8) as u8);
+        wire.push((self.id & 0b11111111) as u8);
+        let meta_wire = self.meta.to_wire();
+        wire.push(meta_wire[0]);
+        wire.push(meta_wire[1]);
+
+        // dis is painful, plz loop
+        wire.push((self.qdcount >> 8) as u8);
+        wire.push(self.qdcount as u8);
+
+        wire.push((self.ancount >> 8) as u8);
+        wire.push(self.ancount as u8);
+
+        wire.push((self.nscount >> 8) as u8);
+        wire.push(self.nscount as u8);
+
+        wire.push((self.arcount >> 8) as u8);
+        wire.push(self.arcount as u8);
+
+        wire
     }
 
     pub fn new(name: Vec<String>) -> Message {
