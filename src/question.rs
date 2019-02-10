@@ -1,6 +1,7 @@
 use std::fmt;
 use crate::utils::{extract_name, byte_combine};
 
+
 pub struct Question {
     qname: Vec<String>,
     qtype: u16,
@@ -11,9 +12,9 @@ impl Question {
     pub fn from_wire(wire: &[u8], mut offset: usize) -> (Question, usize) {
         let (qname, l_offset) = extract_name(wire, offset);
         offset = l_offset;
-        let qtype = byte_combine(wire[offset + 1], wire[offset]);
+        let qtype = byte_combine(wire[offset], wire[offset + 1]);
         offset += 2;
-        let qclass = byte_combine(wire[offset + 1], wire[offset]);
+        let qclass = byte_combine(wire[offset], wire[offset + 1]);
         offset += 2;
 
         let q = Question { qname: qname,
