@@ -1,11 +1,10 @@
+use crate::utils::{byte_combine, extract_name};
 use std::fmt;
-use crate::utils::{extract_name, byte_combine};
-
 
 pub struct Question {
-    qname: Vec<String>,
-    qtype: u16,
-    qclass: u16,
+    pub qname: Vec<String>,
+    pub qtype: u16,
+    pub qclass: u16,
 }
 
 impl Question {
@@ -17,16 +16,20 @@ impl Question {
         let qclass = byte_combine(wire[offset], wire[offset + 1]);
         offset += 2;
 
-        let q = Question { qname: qname,
-                           qtype: qtype,
-                           qclass: qclass, };
+        let q = Question {
+            qname: qname,
+            qtype: qtype,
+            qclass: qclass,
+        };
         (q, offset)
     }
 
     pub fn new(qname: Vec<String>, qtype: u16, qclass: u16) -> Question {
-        Question{ qname: qname,
-                  qtype: qtype,
-                  qclass: qclass }
+        Question {
+            qname: qname,
+            qtype: qtype,
+            qclass: qclass,
+        }
     }
 }
 

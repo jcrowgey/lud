@@ -1,7 +1,7 @@
-use std::fmt;
 use num::FromPrimitive;
+use std::fmt;
 
-use crate::utils::{bytes_to_name_offset, extract_name, byte_combine};
+use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
 
 enum_from_primitive! {
 #[derive(Debug, PartialEq)]
@@ -25,7 +25,6 @@ pub enum Class {
     HS = 4
 }
 }
-
 
 fn extract_ttl(bytes: &[u8], offset: usize) -> i32 {
     (16 * 16 * (byte_combine(bytes[offset], bytes[offset + 1]) as i32)
@@ -75,7 +74,7 @@ impl RR {
             class: class,
             ttl: ttl,
             rdlength: rdlength as u16,
-            rdata: buf[offset .. offset+rdlength].to_owned(),
+            rdata: buf[offset..offset + rdlength].to_owned(),
         };
         offset += rdlength;
         (rr, offset)
@@ -90,7 +89,7 @@ fn format_rdata(rr: &RR) -> String {
             let mut idx = 0;
             while todo > 0 {
                 let mut sep = "";
-                for byte in rr.rdata[idx..idx+4].iter() {
+                for byte in rr.rdata[idx..idx + 4].iter() {
                     rdata_fmt.push_str(sep);
                     rdata_fmt.push_str(&byte.to_string());
                     sep = ".";
@@ -99,7 +98,7 @@ fn format_rdata(rr: &RR) -> String {
                 idx += 4;
                 todo -= 1;
             }
-        },
+        }
         _ => {
             for byte in rr.rdata.iter() {
                 rdata_fmt.push_str(&byte.to_string());

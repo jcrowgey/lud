@@ -2,10 +2,12 @@ use byteorder::{BigEndian, ReadBytesExt};
 use num::FromPrimitive;
 use std::fmt;
 
+use std::collections::HashMap;
+
 use rand::random;
 
-use crate::rr::RR;
 use crate::question::Question;
+use crate::rr::RR;
 
 pub const DNS_MSG_MAX: usize = 512;
 
@@ -58,7 +60,7 @@ impl MessageMeta {
     }
 
     fn to_wire(&self) -> Vec<u8> {
-        let mut byte_1 = (*&self.qr as u8) << 8;
+        let mut byte_1 = (*&self.qr as u8) << 7;
         byte_1 += self.opcode << 3;
         byte_1 += (self.aa as u8) << 2;
         byte_1 += (self.tc as u8) << 1;
@@ -132,7 +134,6 @@ impl fmt::Display for Message {
 
 impl Message {
     pub fn from_wire(buf: [u8; DNS_MSG_MAX], len: usize) -> Message {
-
         let mut m_reply: &[u8] = &buf[..len];
         let mut message = Message {
             id: m_reply.read_u16::<BigEndian>().unwrap(),
@@ -162,7 +163,7 @@ impl Message {
     pub fn to_wire(&self) -> Vec<u8> {
         let mut wire = Vec::new();
         wire.push((self.id >> 8) as u8);
-        wire.push((self.id & 0b11111111) as u8);
+        wire.push((self.id & 255) as u8);
         let meta_wire = self.meta.to_wire();
         wire.push(meta_wire[0]);
         wire.push(meta_wire[1]);
@@ -179,6 +180,35 @@ impl Message {
 
         wire.push((self.arcount >> 8) as u8);
         wire.push(self.arcount as u8);
+
+        let mut offset_map = HashMap::new();
+
+        for q in self.question.iter() {
+            for index in 0..q.qname.len() {
+                let name = q.qname[index..].join(".");
+                match offset_map.get(&name) {
+                    Some(offset) => {
+                        let flagged_offset = 0b11000000_00000000 + offset;
+                        wire.push((flagged_offset >> 8) as u8);
+                        wire.push((flagged_offset & 255) as u8);
+                        wire.push((q.qtype >> 8) as u8);
+                        wire.push((q.qtype & 255) as u8);
+                        break;
+                    }
+                    None => {
+                        offset_map.insert(name, wire.len());
+                        wire.push(q.qname[index].len() as u8);
+                        for byte in q.qname[index].bytes() {
+                            wire.push(byte);
+                        }
+                    }
+                }
+            }
+            wire.push((q.qtype >> 8) as u8);
+            wire.push((q.qtype & 255) as u8);
+            wire.push((q.qclass >> 8) as u8);
+            wire.push((q.qclass & 255) as u8);
+        }
 
         wire
     }
