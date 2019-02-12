@@ -34,6 +34,7 @@ pub enum QR {
 }
 }
 
+
 struct MessageMeta {
     qr: QR,
     opcode: u8,
@@ -59,6 +60,7 @@ impl MessageMeta {
         }
     }
 
+    /* |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   | */
     fn to_wire(&self) -> Vec<u8> {
         let mut byte_1 = (*&self.qr as u8) << 7;
         byte_1 += self.opcode << 3;
@@ -253,4 +255,26 @@ fn extract_questions(reply: &[u8], mut offset: usize, qdcount: u16) -> (Vec<Ques
         questions_processed += 1;
     }
     (questions, offset) // offset is index of next section
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static META_STD_RD_QUERY: u16 = 0b0000_0001_0000_0000;
+
+    #[test]
+    fn messagemeta_new() {
+        /* a standard query with recursion desired */
+        let mm = MessageMeta::new(META_STD_RD_QUERY);
+        assert!(mm.rd);
+    }
+
+    #[test]
+    fn messagemeta_round_trip() {
+        let mm = MessageMeta::new(META_STD_RD_QUERY);
+        let expected_wire = vec![(META_STD_RD_QUERY >> 8) as u8,
+                                 (META_STD_RD_QUERY & 255) as u8];
+        assert_eq!(mm.to_wire(), expected_wire);
+    }
 }
