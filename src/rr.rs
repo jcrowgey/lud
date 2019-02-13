@@ -1,20 +1,104 @@
 use num::FromPrimitive;
 use std::fmt;
+use std::error;
 
 use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
 
-enum_from_primitive! {
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum RRType {
-    A = 1,  // RFC1035
-    NS = 2, // RFC1035
-    CNAME = 5,  // RFC1035
-    SOA = 6,  // RFC1035 RFC2038
-    PTR = 12,  // RFC1035
-    MX = 15, // RFC1035 RFC7505
-    TXT = 16, // RFC1035
+    A,     // 1 a host address
+    NS,    // 2 an authoritative name server
+    MD,    // 3 a mail destination (Obsolete - use MX)
+    MF,    // 4 a mail forwarder (Obsolete - use MX)
+    CNAME, // 5 the canonical name for an alias
+    SOA,   // 6 marks the start of a zone of authority
+    MB,    // 7 a mailbox domain name (EXPERIMENTAL)
+    MG,    // 8 a mail group member (EXPERIMENTAL)
+    MR,    // 9 a mail rename domain name (EXPERIMENTAL)
+    NULL,  // 10 a null RR (EXPERIMENTAL)
+    WKS,   // 11 a well known service description
+    PTR,   // 12 a domain name pointer
+    HINFO, // 13 host information
+    MINFO, // 14 mailbox or mail list information
+    MX,    // 15 mail exchange
+    TXT,   // 16 text strings
 }
+
+impl From<RRType> for u16 {
+    fn from(original: RRType) -> u16 {
+        match original {
+            RRType::A => 1,
+            RRType::NS => 2,
+            RRType::MD => 3,
+            RRType::MF => 4,
+            RRType::CNAME => 5,
+            RRType::SOA => 6,
+            RRType::MB => 7,
+            RRType::MG => 8,
+            RRType::MR => 9,
+            RRType::NULL => 10,
+            RRType::WKS => 11,
+            RRType::PTR => 12,
+            RRType::HINFO => 13,
+            RRType::MINFO => 14,
+            RRType::MX => 15,
+            RRType::TXT => 16,
+        }
+    }
 }
+
+#[derive(Debug, Clone)]
+pub struct ParseError;
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid rrtype")
+    }
+}
+
+impl error::Error for ParseError {
+    fn description(&self) -> &str {
+        "invalid rrtype"
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        None
+    }
+}
+
+// XXX: move this out once std::convert::TryFrom is in stable
+pub trait TryFrom<T>: Sized {
+    /// The type returned in the event of a conversion error.
+    type Error;
+
+    /// Performs the conversion.
+    fn try_from(value: T) -> Result<Self, Self::Error>;
+}
+
+impl TryFrom<u16> for RRType {
+    type Error = ParseError;
+    fn try_from(original: u16) -> Result<Self, Self::Error> {
+        match original {
+            1 => Ok(RRType::A),
+            2 => Ok(RRType::NS),
+            3 => Ok(RRType::MD),
+            4 => Ok(RRType::MF),
+            5 => Ok(RRType::CNAME),
+            6 => Ok(RRType::SOA),
+            7 => Ok(RRType::MB),
+            8 => Ok(RRType::MG),
+            9 => Ok(RRType::MR),
+            10 => Ok(RRType::NULL),
+            11 => Ok(RRType::WKS),
+            12 => Ok(RRType::PTR),
+            13 => Ok(RRType::HINFO),
+            14 => Ok(RRType::MINFO),
+            15 => Ok(RRType::MX),
+            16 => Ok(RRType::TXT),
+            _ => Err(ParseError)
+        }
+    }
+}
+
 
 enum_from_primitive! {
 #[derive(Debug, PartialEq)]
@@ -59,7 +143,7 @@ impl RR {
         }
 
         // XXX: do we really want to unwrap here?!
-        let rrtype = RRType::from_u16(byte_combine(buf[offset], buf[offset + 1])).unwrap();
+        let rrtype = RRType::try_from(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
         let class = Class::from_u16(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
