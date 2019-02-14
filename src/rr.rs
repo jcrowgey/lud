@@ -2,6 +2,7 @@ use num::FromPrimitive;
 use std::fmt;
 use std::error;
 
+use crate::tryfrom::TryFrom;
 use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
 
 #[derive(Debug)]
@@ -63,15 +64,6 @@ impl error::Error for ParseError {
     fn cause(&self) -> Option<&error::Error> {
         None
     }
-}
-
-// XXX: move this out once std::convert::TryFrom is in stable
-pub trait TryFrom<T>: Sized {
-    /// The type returned in the event of a conversion error.
-    type Error;
-
-    /// Performs the conversion.
-    fn try_from(value: T) -> Result<Self, Self::Error>;
 }
 
 impl TryFrom<u16> for RRType {

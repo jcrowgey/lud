@@ -6,7 +6,8 @@ use std::collections::HashMap;
 
 use rand::random;
 
-use crate::question::Question;
+use crate::question::{Question, QType};
+use crate::tryfrom::TryFrom;
 use crate::rr::RR;
 
 pub const DNS_MSG_MAX: usize = 512;
@@ -193,9 +194,9 @@ impl Message {
                         let flagged_offset = 0b11000000_00000000 + offset;
                         wire.push((flagged_offset >> 8) as u8);
                         wire.push((flagged_offset & 255) as u8);
-                        wire.push((q.qtype >> 8) as u8);
-                        wire.push((q.qtype & 255) as u8);
-                        break;
+                        let qtype_wire: u16 = u16::from(q.qtype);
+                        wire.push((qtype_wire >> 8) as u8);
+                        wire.push((qtype_wire & 255) as u8);
                     }
                     None => {
                         offset_map.insert(name, wire.len());
@@ -206,8 +207,9 @@ impl Message {
                     }
                 }
             }
-            wire.push((q.qtype >> 8) as u8);
-            wire.push((q.qtype & 255) as u8);
+            let qtype_wire: u16 = u16::from(q.qtype);
+            wire.push((qtype_wire >> 8) as u8);
+            wire.push((qtype_wire & 255) as u8);
             wire.push((q.qclass >> 8) as u8);
             wire.push((q.qclass & 255) as u8);
         }
@@ -215,7 +217,7 @@ impl Message {
         wire
     }
 
-    pub fn new(name: Vec<String>) -> Message {
+    pub fn new(name: Vec<String>, qtype: String) -> Message {
         Message {
             id: random::<u16>(),
             meta: MessageMeta::new(0x0100), // question with RD flag
@@ -223,7 +225,10 @@ impl Message {
             ancount: 0x0000,
             nscount: 0x0000,
             arcount: 0x0000,
-            question: vec![Question::new(name, 0x0001, 0x0001)], // basic question type, internet class
+            // basic question type, internet class
+            question: vec![Question::new(name,
+                                         QType::try_from(qtype).unwrap(),
+                                         0x0001)],
             answer: Vec::<RR>::new(),
             authority: Vec::<RR>::new(),
             additional: Vec::<RR>::new(),
