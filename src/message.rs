@@ -1,5 +1,4 @@
 use byteorder::{BigEndian, ReadBytesExt};
-use num::FromPrimitive;
 use std::fmt;
 
 use std::collections::HashMap;
@@ -7,32 +6,51 @@ use std::collections::HashMap;
 use rand::random;
 
 use crate::question::{Question, QType};
-use crate::tryfrom::TryFrom;
 use crate::rr::RR;
+use crate::tryfrom::TryFrom;
 
 pub const DNS_MSG_MAX: usize = 512;
 
 // I think the numeric values are superfluous,
 // because they're indexed from 0 in sequence, but not sure
-enum_from_primitive! {
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum RCode {
-    NOERROR = 0,
-    FORMAT_ERROR = 1,
-    SERVFAIL = 2,
-    NAME_ERROR = 3,
-    NOTIMP = 4,
-    REFUSED = 5,
-    RESERVED = 6, // reserved is 6 through 15 really
-}
+    NoError,
+    FormatError,
+    ServFail,
+    NameError,
+    NotImp,
+    Refused,
+    Reserved,
 }
 
-enum_from_primitive! {
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum QR {
-    Q = 0,
-    R = 1
+impl From<u16> for RCode {
+    fn from(original: u16) -> RCode {
+        match original {
+            0 => RCode::NoError,
+            1 => RCode::FormatError,
+            2 => RCode::ServFail,
+            3 => RCode::NameError,
+            4 => RCode::NotImp,
+            5 => RCode::Refused,
+            _ => RCode::Reserved,   // reserved is 6 through 15 really
+        }
+    }
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum QR {
+    Q,
+    R,
+}
+
+impl From<bool> for QR {
+    fn from(original: bool) -> QR {
+        match original {
+            false => QR::Q,
+            true => QR::R,
+        }
+    }
 }
 
 
@@ -50,14 +68,14 @@ struct MessageMeta {
 impl MessageMeta {
     fn new(meta: u16) -> MessageMeta {
         MessageMeta {
-            qr: QR::from_u16(meta >> 15).unwrap(),
+            qr: QR::from((meta >> 15) != 0),
             opcode: ((meta >> 11) & 0b1111) as u8,
             aa: ((meta >> 10) & 0b1) != 0,
             tc: ((meta >> 9) & 0b1) != 0,
             rd: ((meta >> 8) & 0b1) != 0,
             ra: ((meta >> 7) & 0b1) != 0,
             z: ((meta >> 4) & 0b111) as u8,
-            rcode: RCode::from_u16(meta & 0b1111).unwrap(),
+            rcode: RCode::from(meta & 0b1111),
         }
     }
 
@@ -227,7 +245,7 @@ impl Message {
             arcount: 0x0000,
             // basic question type, internet class
             question: vec![Question::new(name,
-                                         QType::try_from(qtype).unwrap(),
+                                         QType::try_from(qtype).expect("unable to parse qtype"),
                                          0x0001)],
             answer: Vec::<RR>::new(),
             authority: Vec::<RR>::new(),

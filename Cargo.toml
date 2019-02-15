@@ -5,8 +5,6 @@ authors = ["Joshua Crowgey <jcrowgey@uw.edu>"]
 edition = "2018"
 
 [dependencies]
-enum_primitive = "*"
-num = "*"
 byteorder = "*"
 clap = "*"
 rand = "*"

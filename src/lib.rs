@@ -1,8 +1,5 @@
 extern crate byteorder;
-extern crate num;
 extern crate rand;
-#[macro_use]
-extern crate enum_primitive;
 
 use std::net::UdpSocket;
 
@@ -12,6 +9,7 @@ mod question;
 mod rr;
 mod utils;
 mod message;
+mod errors;
 
 use message::Message;
 

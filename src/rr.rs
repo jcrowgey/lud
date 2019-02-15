@@ -1,11 +1,10 @@
-use num::FromPrimitive;
 use std::fmt;
-use std::error;
 
 use crate::tryfrom::TryFrom;
 use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
+use crate::errors::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum RRType {
     A,     // 1 a host address
     NS,    // 2 an authoritative name server
@@ -48,24 +47,6 @@ impl From<RRType> for u16 {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct ParseError;
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid rrtype")
-    }
-}
-
-impl error::Error for ParseError {
-    fn description(&self) -> &str {
-        "invalid rrtype"
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
-        None
-    }
-}
-
 impl TryFrom<u16> for RRType {
     type Error = ParseError;
     fn try_from(original: u16) -> Result<Self, Self::Error> {
@@ -91,16 +72,54 @@ impl TryFrom<u16> for RRType {
     }
 }
 
+impl TryFrom<String> for RRType {
+    type Error = ParseError;
+    fn try_from(original: String) -> Result<Self, Self::Error> {
+        match original.as_ref() {
+             "A" => Ok(RRType::A),     // 1 a host address
+             "NS" => Ok(RRType::NS),    // 2 an authoritative name server
+             "MD" => Ok(RRType::MD),    // 3 a mail destination (Obsolete - use MX)
+             "MF" => Ok(RRType::MF),    // 4 a mail forwarder (Obsolete - use MX)
+             "CNAME" => Ok(RRType::CNAME), // 5 the canonical name for an alias
+             "SOA" => Ok(RRType::SOA),   // 6 marks the start of a zone of authority
+             "MB" => Ok(RRType::MB),    // 7 a mailbox domain name (EXPERIMENTAL)
+             "MG" => Ok(RRType::MG),    // 8 a mail group member (EXPERIMENTAL)
+             "MR" => Ok(RRType::MR),    // 9 a mail rename domain name (EXPERIMENTAL)
+             "NULL" => Ok(RRType::NULL),  // 10 a null RR (EXPERIMENTAL)
+             "WKS" => Ok(RRType::WKS),   // 11 a well known service description
+             "PTR" => Ok(RRType::PTR),   // 12 a domain name pointer
+             "HINFO" => Ok(RRType::HINFO), // 13 host information
+             "MINFO" => Ok(RRType::MINFO), // 14 mailbox or mail list information
+             "MX" => Ok(RRType::MX),    // 15 mail exchange
+             "TXT" => Ok(RRType::TXT),   // 16 text strings
+            _ => Err(ParseError),
+        }
+    }
+}
 
-enum_from_primitive! {
-#[derive(Debug, PartialEq)]
+
+#[derive(Debug, Clone)]
 pub enum Class {
     IN = 1,
     CS = 2,
     CH = 3,
     HS = 4
 }
+
+
+impl TryFrom<u16> for Class {
+    type Error = ParseError;
+    fn try_from(original: u16) -> Result<Self, Self::Error> {
+        match original {
+            1 => Ok(Class::IN),
+            2 => Ok(Class::CS),
+            3 => Ok(Class::CH),
+            4 => Ok(Class::HS),
+            _ => Err(ParseError),
+        }
+    }
 }
+
 
 fn extract_ttl(bytes: &[u8], offset: usize) -> i32 {
     (16 * 16 * (byte_combine(bytes[offset], bytes[offset + 1]) as i32)
@@ -137,7 +156,7 @@ impl RR {
         // XXX: do we really want to unwrap here?!
         let rrtype = RRType::try_from(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
-        let class = Class::from_u16(byte_combine(buf[offset], buf[offset + 1])).unwrap();
+        let class = Class::try_from(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;
         let ttl = extract_ttl(buf, offset);
         offset += 4;
