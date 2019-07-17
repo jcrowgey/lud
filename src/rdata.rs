@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str};
 use crate::utils::extract_name;
 use crate::rr::RRType;
 
@@ -170,6 +170,24 @@ impl fmt::Display for PTRData {
     }
 }
 
+pub struct TXTData {
+    txtdata: Vec<u8>, // Should actually be a Vec of <character-string> (cf RFC1035)
+}
+
+impl TXTData {
+    pub fn from_wire(buf: &[u8], offset: usize, rdlength: usize) -> TXTData {
+        TXTData {
+            txtdata: buf[offset .. offset + rdlength].to_owned()
+        }
+    }
+}
+
+impl fmt::Display for TXTData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // XXX: TXT is not necessarily utf8, read the specs and fix
+        write!(f, "{:?}", str::from_utf8(&self.txtdata).unwrap())
+    }
+}
 
 pub enum RData {
     A(AData),
@@ -178,6 +196,7 @@ pub enum RData {
     SOA(SOAData),
     PTR(PTRData),
     MX(MXData),
+    TXT(TXTData),
     UNKNOWN(u16),
 }
 
@@ -190,12 +209,13 @@ impl fmt::Display for RData {
             RData::SOA(soa_data) => soa_data.fmt(f),
             RData::PTR(ptr_data) => ptr_data.fmt(f),
             RData::MX(mx_data) => mx_data.fmt(f),
+            RData::TXT(txt_data) => txt_data.fmt(f),
             RData::UNKNOWN(rrtype) => write!(f, "{}", rrtype),
         }
     }
 }
 
-pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize) -> RData {
+pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> RData {
     match rrtype {
         RRType::A => RData::A(AData::from_wire(buf, offset)),
         RRType::NS => RData::NS(NSData::from_wire(buf, offset)),
@@ -203,6 +223,7 @@ pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize) -> RData {
         RRType::SOA => RData::SOA(SOAData::from_wire(buf, offset)),
         RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
         RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
+        RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
         _ => RData::UNKNOWN(u16::from(rrtype)),
     }
 }

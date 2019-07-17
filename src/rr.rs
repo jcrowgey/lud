@@ -166,7 +166,7 @@ impl RR {
         let rdlength = byte_combine(buf[offset], buf[offset + 1]) as usize;
         offset += 2;
 
-        let rdata_parsed = rdata::from_wire(rrtype, buf, offset);
+        let rdata_parsed = rdata::from_wire(rrtype, buf, offset, rdlength);
         let rr = RR {
             name: name,
             rrtype: rrtype,
