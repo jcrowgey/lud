@@ -3,6 +3,8 @@ use std::fmt;
 use crate::tryfrom::TryFrom;
 use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
 use crate::errors::ParseError;
+use crate::rdata;
+use crate::rdata::RData;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RRType {
@@ -132,7 +134,7 @@ pub struct RR {
     class: Class,
     ttl: i32,
     rdlength: u16,
-    rdata: Vec<u8>,
+    rdata_parsed: RData,
 }
 
 impl RR {
@@ -160,52 +162,28 @@ impl RR {
         offset += 2;
         let ttl = extract_ttl(buf, offset);
         offset += 4;
+
         let rdlength = byte_combine(buf[offset], buf[offset + 1]) as usize;
         offset += 2;
 
+        let rdata_parsed = rdata::from_wire(rrtype, buf, offset);
         let rr = RR {
             name: name,
             rrtype: rrtype,
             class: class,
             ttl: ttl,
             rdlength: rdlength as u16,
-            rdata: buf[offset..offset + rdlength].to_owned(),
+            rdata_parsed: rdata_parsed,
         };
+
         offset += rdlength;
         (rr, offset)
     }
 }
 
-fn format_rdata(rr: &RR) -> String {
-    let mut rdata_fmt = String::new();
-    match rr.rrtype {
-        RRType::A => {
-            let mut todo = rr.rdlength / 4; // 4 bytes per IPv4
-            let mut idx = 0;
-            while todo > 0 {
-                let mut sep = "";
-                for byte in rr.rdata[idx..idx + 4].iter() {
-                    rdata_fmt.push_str(sep);
-                    rdata_fmt.push_str(&byte.to_string());
-                    sep = ".";
-                }
-                rdata_fmt.push_str("\n");
-                idx += 4;
-                todo -= 1;
-            }
-        }
-        _ => {
-            for byte in rr.rdata.iter() {
-                rdata_fmt.push_str(&byte.to_string());
-            }
-        }
-    }
-    rdata_fmt
-}
-
 impl fmt::Display for RR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let rdata_fmt = format_rdata(&self);
+        let rdata_fmt = self.rdata_parsed.to_string();
 
         write!(
             f,

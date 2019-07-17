@@ -7,6 +7,7 @@ mod tryfrom;
 
 mod question;
 mod rr;
+mod rdata;
 mod utils;
 mod message;
 mod errors;
