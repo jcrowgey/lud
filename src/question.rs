@@ -1,8 +1,7 @@
 use crate::utils::{byte_combine, extract_name};
-use std::convert::{From, AsRef};
+use std::convert::{From, AsRef, TryFrom};
 use std::fmt;
 use std::error;
-use crate::tryfrom::TryFrom;
 
 // TODO: inherit, in some way, the RRTypes
 #[derive(Debug, Clone, Copy)]

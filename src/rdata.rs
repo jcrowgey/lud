@@ -224,6 +224,6 @@ pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> 
         RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
         RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
         RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
-        _ => RData::UNKNOWN(u16::from(rrtype)),
+        _ => RData::UNKNOWN(rrtype as u16),
     }
 }

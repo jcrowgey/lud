@@ -1,27 +1,24 @@
 use byteorder::{BigEndian, ReadBytesExt};
 use std::fmt;
-
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 use rand::random;
 
 use crate::question::{Question, QType};
 use crate::rr::RR;
-use crate::tryfrom::TryFrom;
 
 pub const DNS_MSG_MAX: usize = 512;
 
-// I think the numeric values are superfluous,
-// because they're indexed from 0 in sequence, but not sure
 #[derive(Debug, Clone, Copy)]
 pub enum RCode {
-    NoError,
-    FormatError,
-    ServFail,
-    NameError,
-    NotImp,
-    Refused,
-    Reserved,
+    NoError = 0,
+    FormatError = 1,
+    ServFail = 2,
+    NameError = 3,
+    NotImp = 4,
+    Refused = 5,
+    Reserved = 6,
 }
 
 impl From<u16> for RCode {

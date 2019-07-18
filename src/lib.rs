@@ -3,8 +3,6 @@ extern crate rand;
 
 use std::net::UdpSocket;
 
-mod tryfrom;
-
 mod question;
 mod rr;
 mod rdata;

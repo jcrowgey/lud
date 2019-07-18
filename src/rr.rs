@@ -1,52 +1,30 @@
 use std::fmt;
 
-use crate::tryfrom::TryFrom;
+use std::convert::TryFrom;
 use crate::utils::{byte_combine, bytes_to_name_offset, extract_name};
 use crate::errors::ParseError;
 use crate::rdata;
 use crate::rdata::RData;
 
 #[derive(Debug, Clone, Copy)]
+#[repr(u16)]
 pub enum RRType {
-    A,     // 1 a host address
-    NS,    // 2 an authoritative name server
-    MD,    // 3 a mail destination (Obsolete - use MX)
-    MF,    // 4 a mail forwarder (Obsolete - use MX)
-    CNAME, // 5 the canonical name for an alias
-    SOA,   // 6 marks the start of a zone of authority
-    MB,    // 7 a mailbox domain name (EXPERIMENTAL)
-    MG,    // 8 a mail group member (EXPERIMENTAL)
-    MR,    // 9 a mail rename domain name (EXPERIMENTAL)
-    NULL,  // 10 a null RR (EXPERIMENTAL)
-    WKS,   // 11 a well known service description
-    PTR,   // 12 a domain name pointer
-    HINFO, // 13 host information
-    MINFO, // 14 mailbox or mail list information
-    MX,    // 15 mail exchange
-    TXT,   // 16 text strings
-}
-
-impl From<RRType> for u16 {
-    fn from(original: RRType) -> u16 {
-        match original {
-            RRType::A => 1,
-            RRType::NS => 2,
-            RRType::MD => 3,
-            RRType::MF => 4,
-            RRType::CNAME => 5,
-            RRType::SOA => 6,
-            RRType::MB => 7,
-            RRType::MG => 8,
-            RRType::MR => 9,
-            RRType::NULL => 10,
-            RRType::WKS => 11,
-            RRType::PTR => 12,
-            RRType::HINFO => 13,
-            RRType::MINFO => 14,
-            RRType::MX => 15,
-            RRType::TXT => 16,
-        }
-    }
+    A = 1,     // a host address
+    NS = 2,    // an authoritative name server
+    MD = 3,    // a mail destination (Obsolete - use MX)
+    MF = 4,    // a mail forwarder (Obsolete - use MX)
+    CNAME = 5, // the canonical name for an alias
+    SOA = 6,   // marks the start of a zone of authority
+    MB = 7,    // a mailbox domain name (EXPERIMENTAL)
+    MG = 8,    // a mail group member (EXPERIMENTAL)
+    MR = 9,    // a mail rename domain name (EXPERIMENTAL)
+    NULL = 10,  // a null RR (EXPERIMENTAL)
+    WKS = 11,   // a well known service description
+    PTR = 12,   // a domain name pointer
+    HINFO = 13, // host information
+    MINFO = 14, // mailbox or mail list information
+    MX = 15,    // mail exchange
+    TXT = 16,   // text strings
 }
 
 impl TryFrom<u16> for RRType {
@@ -195,5 +173,18 @@ impl fmt::Display for RR {
             self.rdlength,
             rdata_fmt
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rrtype_u16_round_trip() {
+        let cname: u16 = 5;
+        let rrt = RRType::try_from(cname).unwrap();
+        let _u16 = rrt as u16;
+        assert_eq!(_u16, cname);
     }
 }
