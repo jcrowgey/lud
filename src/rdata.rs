@@ -215,15 +215,17 @@ impl fmt::Display for RData {
     }
 }
 
-pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> RData {
-    match rrtype {
-        RRType::A => RData::A(AData::from_wire(buf, offset)),
-        RRType::NS => RData::NS(NSData::from_wire(buf, offset)),
-        RRType::CNAME => RData::CNAME(CNAMEData::from_wire(buf, offset)),
-        RRType::SOA => RData::SOA(SOAData::from_wire(buf, offset)),
-        RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
-        RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
-        RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
-        _ => RData::UNKNOWN(rrtype as u16),
+impl RData {
+    pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> RData {
+        match rrtype {
+            RRType::A => RData::A(AData::from_wire(buf, offset)),
+            RRType::NS => RData::NS(NSData::from_wire(buf, offset)),
+            RRType::CNAME => RData::CNAME(CNAMEData::from_wire(buf, offset)),
+            RRType::SOA => RData::SOA(SOAData::from_wire(buf, offset)),
+            RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
+            RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
+            RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
+            _ => RData::UNKNOWN(rrtype as u16),
+        }
     }
 }
