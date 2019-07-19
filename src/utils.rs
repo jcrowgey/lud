@@ -3,7 +3,7 @@ pub fn byte_combine(a: u8, b: u8) -> u16 {
 }
 
 pub fn bytes_to_name_offset(a: u8, b: u8) -> usize {
-    (byte_combine(a, b) & 0b11111111111111) as usize
+    (byte_combine(a, b) & 0b11_1111_1111_1111) as usize
 }
 
 pub fn extract_name(bytes: &[u8], mut offset: usize) -> (Vec<String>, usize) {
