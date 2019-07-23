@@ -1,11 +1,12 @@
+#[macro_use]
 extern crate clap;
 use clap::{App, Arg};
 
 use lud;
 
 fn main() {
-    let matches = App::new("dlu")
-        .version("0.1.0")
+    let matches = App::new("lud")
+        .version(crate_version!())
         .about("DNS Lookup Client")
         .author("Joshua Crowgey")
         .arg(
