@@ -1,7 +1,7 @@
 use crate::utils::{byte_combine, extract_name};
-use std::convert::{From, AsRef, TryFrom};
-use std::fmt;
+use std::convert::{AsRef, From, TryFrom};
 use std::error;
+use std::fmt;
 
 // TODO: inherit, in some way, the RRTypes
 #[derive(Debug, Clone, Copy)]
@@ -131,13 +131,11 @@ impl TryFrom<u16> for QType {
     }
 }
 
-
 pub struct Question {
     pub qname: Vec<String>,
     pub qtype: QType,
     pub qclass: u16,
 }
-
 
 impl Question {
     pub fn from_wire(wire: &[u8], mut offset: usize) -> (Question, usize) {

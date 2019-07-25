@@ -1,5 +1,5 @@
-use std::fmt;
 use std::error;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct ParseError;
@@ -18,4 +18,3 @@ impl error::Error for ParseError {
         None
     }
 }
-

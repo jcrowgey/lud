@@ -1,11 +1,11 @@
 use byteorder::{BigEndian, ReadBytesExt};
-use std::fmt;
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::fmt;
 
 use rand::random;
 
-use crate::question::{Question, QType};
+use crate::question::{QType, Question};
 use crate::rr::RR;
 
 pub const DNS_MSG_MAX: usize = 512;
@@ -30,7 +30,7 @@ impl From<u16> for RCode {
             3 => RCode::NameError,
             4 => RCode::NotImp,
             5 => RCode::Refused,
-            _ => RCode::Reserved,   // reserved is 6 through 15 really
+            _ => RCode::Reserved, // reserved is 6 through 15 really
         }
     }
 }
@@ -49,7 +49,6 @@ impl From<bool> for QR {
         }
     }
 }
-
 
 struct MessageMeta {
     qr: QR,
@@ -241,9 +240,11 @@ impl Message {
             nscount: 0x0000,
             arcount: 0x0000,
             // basic question type, internet class
-            question: vec![Question::new(name,
-                                         QType::try_from(qtype).expect("unable to parse qtype"),
-                                         0x0001)],
+            question: vec![Question::new(
+                name,
+                QType::try_from(qtype).expect("unable to parse qtype"),
+                0x0001,
+            )],
             answer: Vec::<RR>::new(),
             authority: Vec::<RR>::new(),
             additional: Vec::<RR>::new(),
@@ -293,8 +294,10 @@ mod tests {
     #[test]
     fn messagemeta_round_trip() {
         let mm = MessageMeta::new(META_STD_RD_QUERY);
-        let expected_wire = vec![(META_STD_RD_QUERY >> 8) as u8,
-                                 (META_STD_RD_QUERY & 255) as u8];
+        let expected_wire = vec![
+            (META_STD_RD_QUERY >> 8) as u8,
+            (META_STD_RD_QUERY & 255) as u8,
+        ];
         assert_eq!(mm.to_wire(), expected_wire);
     }
 }

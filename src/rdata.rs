@@ -1,6 +1,6 @@
-use std::{fmt, str};
-use crate::utils::extract_name;
 use crate::rr::RRType;
+use crate::utils::extract_name;
+use std::{fmt, str};
 
 pub struct AData {
     address: [u8; 4],
@@ -10,10 +10,12 @@ impl AData {
     pub fn from_wire(buf: &[u8], offset: usize) -> AData {
         // rdlength should always be 4 in this case
         AData {
-          address: [buf[offset].to_owned(),
-                    buf[offset + 1].to_owned(),
-                    buf[offset + 2].to_owned(),
-                    buf[offset + 3].to_owned()],
+            address: [
+                buf[offset].to_owned(),
+                buf[offset + 1].to_owned(),
+                buf[offset + 2].to_owned(),
+                buf[offset + 3].to_owned(),
+            ],
         }
     }
 }
@@ -39,9 +41,7 @@ pub struct NSData {
 impl NSData {
     pub fn from_wire(buf: &[u8], offset: usize) -> NSData {
         let (nsdname, _) = extract_name(buf, offset);
-        NSData {
-            nsdname: nsdname
-        }
+        NSData { nsdname: nsdname }
     }
 }
 
@@ -58,9 +58,7 @@ pub struct CNAMEData {
 impl CNAMEData {
     pub fn from_wire(buf: &[u8], offset: usize) -> CNAMEData {
         let (cname, _) = extract_name(buf, offset);
-        CNAMEData {
-            cname: cname
-        }
+        CNAMEData { cname: cname }
     }
 }
 
@@ -69,7 +67,6 @@ impl fmt::Display for CNAMEData {
         write!(f, "{}", self.cname.join("."))
     }
 }
-
 
 pub struct SOAData {
     mname: Vec<String>,
@@ -85,24 +82,24 @@ impl SOAData {
         let (mname, offset) = extract_name(buf, offset);
         let (rname, offset) = extract_name(buf, offset);
         let serial = (buf[offset] as u32) << 24
-                      | (buf[offset + 1] as u32) << 16
-                      | (buf[offset + 2] as u32) << 8
-                      | (buf[offset + 3] as u32);
+            | (buf[offset + 1] as u32) << 16
+            | (buf[offset + 2] as u32) << 8
+            | (buf[offset + 3] as u32);
         let offset = offset + 4;
         let refresh = (buf[offset] as u32) << 24
-                      | (buf[offset + 1] as u32) << 16
-                      | (buf[offset + 2] as u32) << 8
-                      | (buf[offset + 3] as u32);
+            | (buf[offset + 1] as u32) << 16
+            | (buf[offset + 2] as u32) << 8
+            | (buf[offset + 3] as u32);
         let offset = offset + 4;
         let retry = (buf[offset] as u32) << 24
-                      | (buf[offset + 1] as u32) << 16
-                      | (buf[offset + 2] as u32) << 8
-                      | (buf[offset + 3] as u32);
+            | (buf[offset + 1] as u32) << 16
+            | (buf[offset + 2] as u32) << 8
+            | (buf[offset + 3] as u32);
         let offset = offset + 4;
         let expire = (buf[offset] as u32) << 24
-                      | (buf[offset + 1] as u32) << 16
-                      | (buf[offset + 2] as u32) << 8
-                      | (buf[offset + 3] as u32);
+            | (buf[offset + 1] as u32) << 16
+            | (buf[offset + 2] as u32) << 8
+            | (buf[offset + 3] as u32);
         SOAData {
             mname: mname,
             rname: rname,
@@ -117,7 +114,8 @@ impl SOAData {
 impl fmt::Display for SOAData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
-            f, "{}\t{}\t{}\t{}\t{}\t{}",
+            f,
+            "{}\t{}\t{}\t{}\t{}\t{}",
             self.mname.join("."),
             self.rname.join("."),
             self.serial,
@@ -150,7 +148,6 @@ impl fmt::Display for MXData {
     }
 }
 
-
 pub struct PTRData {
     ptrdname: Vec<String>,
 }
@@ -158,9 +155,7 @@ pub struct PTRData {
 impl PTRData {
     pub fn from_wire(buf: &[u8], offset: usize) -> PTRData {
         let (ptrdname, _) = extract_name(buf, offset);
-        PTRData {
-            ptrdname: ptrdname
-        }
+        PTRData { ptrdname: ptrdname }
     }
 }
 
@@ -177,7 +172,7 @@ pub struct TXTData {
 impl TXTData {
     pub fn from_wire(buf: &[u8], offset: usize, rdlength: usize) -> TXTData {
         TXTData {
-            txtdata: buf[offset .. offset + rdlength].to_owned()
+            txtdata: buf[offset..offset + rdlength].to_owned(),
         }
     }
 }
