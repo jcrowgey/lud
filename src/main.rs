@@ -2,7 +2,7 @@
 extern crate clap;
 use clap::{App, Arg};
 
-use lud;
+use lud::{Config, run};
 
 fn main() {
     let matches = App::new("lud")
@@ -33,8 +33,10 @@ fn main() {
         )
         .get_matches();
 
-    let name = matches.value_of("name").unwrap();
-    let server = matches.value_of("server").unwrap_or("9.9.9.9");
-    let qtype = matches.value_of("qtype").unwrap_or("A");
-    lud::run(name.to_string(), qtype.to_string(), server.to_string());
+    let config = Config {
+        name: matches.value_of("name").unwrap().to_string(),
+        server: matches.value_of("server").unwrap_or("9.9.9.9").to_string(),
+        qtype: matches.value_of("qtype").unwrap_or("A").to_string(),
+    };
+    run(config);
 }
