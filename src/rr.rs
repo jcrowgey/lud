@@ -130,7 +130,9 @@ impl RR {
         }
 
         // XXX: do we really want to unwrap here?!
-        let rrtype = RRType::try_from(byte_combine(buf[offset], buf[offset + 1])).unwrap();
+        let rrtype_u16 = byte_combine(buf[offset], buf[offset + 1]);
+        let rrtype = RRType::try_from(rrtype_u16)
+            .expect(&format!("Failed to build RRType from {:?}", rrtype_u16));
         offset += 2;
         let class = Class::try_from(byte_combine(buf[offset], buf[offset + 1])).unwrap();
         offset += 2;

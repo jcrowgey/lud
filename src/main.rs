@@ -34,9 +34,9 @@ fn main() {
         .get_matches();
 
     let config = Config {
-        name: matches.value_of("name").unwrap().to_string(),
-        server: matches.value_of("server").unwrap_or("9.9.9.9").to_string(),
-        qtype: matches.value_of("qtype").unwrap_or("A").to_string(),
+        name: matches.value_of("name").map(String::from),
+        server: matches.value_of("server").map(String::from),
+        qtype: matches.value_of("qtype").map(String::from),
     };
     run(config);
 }

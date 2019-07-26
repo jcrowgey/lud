@@ -1,7 +1,8 @@
 extern crate byteorder;
 extern crate rand;
+extern crate resolv_conf;
 
-use std::net::UdpSocket;
+use std::net::{Ipv4Addr, UdpSocket};
 
 mod errors;
 mod message;
@@ -9,23 +10,36 @@ mod question;
 mod rdata;
 mod rr;
 mod utils;
+mod resconf;
 
 use message::Message;
 
 pub struct Config {
-    pub name: String,
-    pub qtype: String,
-    pub server: String,
+    pub name: Option<String>,
+    pub qtype: Option<String>,
+    pub server: Option<String>,
 }
 
 pub fn run(config: Config) {
-    let mut name: Vec<String> = config.name.split(".").map(|s| s.to_string()).collect();
+    let mut name: Vec<String> = config.name.unwrap().split(".").map(|s| s.to_string()).collect();
     name.push("".to_string());
-    let q_message = Message::new(name, config.qtype);
+
+    let q_message = Message::new(name, config.qtype.unwrap_or("A".to_string()));
     let buf = q_message.to_wire();
 
+
+    let mut resolver;
+    match config.server {
+        Some(server) => {
+            resolver = server + ":53";
+        },
+        _ => {
+            resolver = resconf::get_resolver().to_string() + ":53";
+        },
+    }
+
     let sock = UdpSocket::bind("0.0.0.0:0").expect("Couldn't bind to this address");
-    let resolver = config.server + ":53";
+
     sock.send_to(&buf, resolver).expect("Failed to send");
     let mut reply = [0u8; message::DNS_MSG_MAX];
     match sock.recv(&mut reply) {
