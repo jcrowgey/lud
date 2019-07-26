@@ -184,6 +184,39 @@ impl fmt::Display for TXTData {
     }
 }
 
+pub struct AAAAData {
+    address: [u8; 16],
+}
+
+impl AAAAData {
+    pub fn from_wire(buf: &[u8], offset: usize) -> AAAAData {
+        let mut addr = [0u8; 16];
+        for (i, byte) in buf[offset..offset + 16].iter().enumerate() {
+            addr[i] = byte.to_owned();
+        }
+
+        AAAAData {
+            address: addr,
+        }
+    }
+}
+
+impl fmt::Display for AAAAData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut fmt_str = String::new();
+        let mut sep = "";
+        for (i, byte) in self.address.iter().enumerate() {
+            if i % 2 == 0 {
+                fmt_str.push_str(sep);
+            }
+            fmt_str.push_str(&format!("{:x}", byte));
+            sep = ":";
+        }
+        fmt_str.push_str("\n");
+        write!(f, "{}", fmt_str)
+    }
+}
+
 pub enum RData {
     A(AData),
     NS(NSData),
@@ -192,6 +225,7 @@ pub enum RData {
     PTR(PTRData),
     MX(MXData),
     TXT(TXTData),
+    AAAA(AAAAData),
     UNKNOWN(u16),
 }
 
@@ -205,6 +239,7 @@ impl fmt::Display for RData {
             RData::PTR(ptr_data) => ptr_data.fmt(f),
             RData::MX(mx_data) => mx_data.fmt(f),
             RData::TXT(txt_data) => txt_data.fmt(f),
+            RData::AAAA(aaaa_data) => aaaa_data.fmt(f),
             RData::UNKNOWN(rrtype) => write!(f, "{}", rrtype),
         }
     }
@@ -220,6 +255,7 @@ impl RData {
             RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
             RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
             RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
+            RRType::AAAA => RData::AAAA(AAAAData::from_wire(buf, offset)),
             _ => RData::UNKNOWN(rrtype as u16),
         }
     }

@@ -24,6 +24,7 @@ pub enum RRType {
     MINFO = 14, // mailbox or mail list information
     MX = 15,    // mail exchange
     TXT = 16,   // text strings
+    AAAA = 28,  // ipv6 host address
 }
 
 impl TryFrom<u16> for RRType {
@@ -46,6 +47,7 @@ impl TryFrom<u16> for RRType {
             14 => Ok(RRType::MINFO),
             15 => Ok(RRType::MX),
             16 => Ok(RRType::TXT),
+            28 => Ok(RRType::AAAA),
             _ => Err(ParseError),
         }
     }
@@ -71,6 +73,7 @@ impl TryFrom<String> for RRType {
             "MINFO" => Ok(RRType::MINFO), // 14 mailbox or mail list information
             "MX" => Ok(RRType::MX),       // 15 mail exchange
             "TXT" => Ok(RRType::TXT),     // 16 text strings
+            "AAAA" => Ok(RRType::AAAA),   // 28 ipv6 host address
             _ => Err(ParseError),
         }
     }
