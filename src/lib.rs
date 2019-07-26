@@ -2,7 +2,7 @@ extern crate byteorder;
 extern crate rand;
 extern crate resolv_conf;
 
-use std::net::{Ipv4Addr, UdpSocket};
+use std::net::{UdpSocket};
 
 mod errors;
 mod message;
