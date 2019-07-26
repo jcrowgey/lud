@@ -95,7 +95,7 @@ impl fmt::Display for MessageMeta {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "QR: {:?}; Opcode: {:?}\nFLAGS: AA {:?}; TC {:?} RD: {:?} RA: {:?} Z: {:?}; {:?}",
+            "QR: {:?}; Opcode: {:?}\nFLAGS: AA {:?}; TC {:?}; RD: {:?}; RA: {:?}; Z: {:?}; {:?}",
             self.qr, self.opcode, self.aa, self.tc, self.rd, self.ra, self.z, self.rcode
         )
     }
