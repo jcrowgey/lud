@@ -185,21 +185,12 @@ impl Message {
         wire.push(meta_wire[0]);
         wire.push(meta_wire[1]);
 
-        // dis is painful, plz loop
-        wire.push((self.qdcount >> 8) as u8);
-        wire.push(self.qdcount as u8);
-
-        wire.push((self.ancount >> 8) as u8);
-        wire.push(self.ancount as u8);
-
-        wire.push((self.nscount >> 8) as u8);
-        wire.push(self.nscount as u8);
-
-        wire.push((self.arcount >> 8) as u8);
-        wire.push(self.arcount as u8);
+        for f in vec![self.qdcount, self.ancount, self.nscount, self.arcount] {
+            wire.push((f >> 8) as u8);
+            wire.push(f as u8);
+        }
 
         let mut offset_map = HashMap::new();
-
         for q in self.question.iter() {
             for index in 0..q.qname.len() {
                 let name = q.qname[index..].join(".");
