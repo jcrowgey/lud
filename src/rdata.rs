@@ -247,7 +247,7 @@ impl fmt::Display for AAAAData {
             }
 
             sep = "::";
-            for quibble in quibbles[hi..quibbles.len()].iter() {
+            for quibble in quibbles[hi+1..quibbles.len()].iter() {
                 fmt_str.push_str(sep);
                 fmt_str.push_str(&format!("{:x}", quibble));
                 sep = ":";
