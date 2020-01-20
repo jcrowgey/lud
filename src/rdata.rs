@@ -184,6 +184,88 @@ impl fmt::Display for TXTData {
     }
 }
 
+pub struct AAAAData {
+    address: [u8; 16],
+}
+
+impl AAAAData {
+    pub fn from_wire(buf: &[u8], offset: usize) -> AAAAData {
+        let mut addr = [0u8; 16];
+        for (i, byte) in buf[offset..offset + 16].iter().enumerate() {
+            addr[i] = byte.to_owned();
+        }
+
+        AAAAData {
+            address: addr,
+        }
+    }
+}
+
+impl fmt::Display for AAAAData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let quibbles: Vec<_> = self.address.chunks(2)
+                                           .map(|q| (q[0] as u16) << 8 | q[1] as u16)
+                                           .collect();
+
+        let mut lo: usize = 0;
+        let mut hi: usize = 0;
+        let mut last_zero: Option<usize> = None;
+        for (i, quibble) in quibbles.iter().enumerate() {
+            if *quibble == 0 {
+                // entering
+                if last_zero == None {
+                    last_zero = Some(i);
+                }
+                // staying in: noop
+            } else {
+                if let Some(index) = last_zero { // exiting
+                    if i - 1 - index > hi - lo {  // new best range
+                        hi = i - 1;
+                        lo = index;
+                    }
+                    last_zero = None;
+                }
+                // staying out: noop
+            }
+        }
+
+        if let Some(index) = last_zero { // range may run to the end
+            if quibbles.len() - 1 - index > hi - lo {  // new best range
+                hi = quibbles.len() - 1;
+                lo = index;
+            }
+        }
+
+        let mut fmt_str = String::new();
+        let mut sep = "";
+
+        if hi - lo > 0 {
+            for quibble in quibbles[0..lo].iter() {
+                fmt_str.push_str(sep);
+                fmt_str.push_str(&format!("{:x}", quibble));
+                sep = ":";
+            }
+
+            sep = "::";
+            for quibble in quibbles[hi+1..quibbles.len()].iter() {
+                fmt_str.push_str(sep);
+                fmt_str.push_str(&format!("{:x}", quibble));
+                sep = ":";
+            }
+
+
+        } else {
+            for quibble in quibbles.iter() {
+                fmt_str.push_str(sep);
+                fmt_str.push_str(&format!("{:x}", quibble));
+                sep = ":";
+            }
+            fmt_str.push_str("\n");
+        }
+        write!(f, "{}", fmt_str)
+    }
+}
+
 pub enum RData {
     A(AData),
     NS(NSData),
@@ -192,6 +274,7 @@ pub enum RData {
     PTR(PTRData),
     MX(MXData),
     TXT(TXTData),
+    AAAA(AAAAData),
     UNKNOWN(u16),
 }
 
@@ -205,6 +288,7 @@ impl fmt::Display for RData {
             RData::PTR(ptr_data) => ptr_data.fmt(f),
             RData::MX(mx_data) => mx_data.fmt(f),
             RData::TXT(txt_data) => txt_data.fmt(f),
+            RData::AAAA(aaaa_data) => aaaa_data.fmt(f),
             RData::UNKNOWN(rrtype) => write!(f, "{}", rrtype),
         }
     }
@@ -220,6 +304,7 @@ impl RData {
             RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
             RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
             RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
+            RRType::AAAA => RData::AAAA(AAAAData::from_wire(buf, offset)),
             _ => RData::UNKNOWN(rrtype as u16),
         }
     }
