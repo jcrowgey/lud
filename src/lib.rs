@@ -28,7 +28,7 @@ pub fn run(config: Config) {
     let buf = q_message.to_wire();
 
 
-    let mut resolver;
+    let resolver;
     match config.server {
         Some(server) => {
             resolver = server + ":53";
