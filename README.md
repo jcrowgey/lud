@@ -25,7 +25,7 @@ Usage
 --
 
 ```console
-jcrowgey@tsuga:~/src/lud$ lud --help
+$ lud --help
 lud 0.2.0
 Joshua Crowgey
 DNS Lookup Client
@@ -73,7 +73,7 @@ example.com	A	IN	TTL: 11248, RDLEN: 4
 
 Asking for a SOA record looks like this:
 
-```
+```console
 $ lud example.com -q SOA
 ID: 9594
 QR: R; Opcode: 0
