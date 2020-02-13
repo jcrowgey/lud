@@ -8,4 +8,9 @@ edition = "2018"
 byteorder = "*"
 clap = "*"
 rand = "*"
+
+[target.'cfg(linux)'.dependencies]
 resolv-conf = "0.6.2"
+
+[target.'cfg(windows)'.dependencies]
+ipconfig = "0.2.1"
