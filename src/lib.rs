@@ -1,6 +1,5 @@
 extern crate byteorder;
 extern crate rand;
-extern crate resolv_conf;
 
 use std::net::{UdpSocket};
 
@@ -10,6 +9,9 @@ mod question;
 mod rdata;
 mod rr;
 mod utils;
+
+#[cfg_attr(linux, path = "resconf.linux.rs")]
+#[cfg_attr(windows, path = "resconf.windows.rs")]
 mod resconf;
 
 use message::Message;
