@@ -195,17 +195,17 @@ impl AAAAData {
             addr[i] = byte.to_owned();
         }
 
-        AAAAData {
-            address: addr,
-        }
+        AAAAData { address: addr }
     }
 }
 
 impl fmt::Display for AAAAData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let quibbles: Vec<_> = self.address.chunks(2)
-                                           .map(|q| (q[0] as u16) << 8 | q[1] as u16)
-                                           .collect();
+        let quibbles: Vec<_> = self
+            .address
+            .chunks(2)
+            .map(|q| (q[0] as u16) << 8 | q[1] as u16)
+            .collect();
 
         let mut lo: usize = 0;
         let mut hi: usize = 0;
@@ -216,10 +216,12 @@ impl fmt::Display for AAAAData {
                 if last_zero == None {
                     last_zero = Some(i);
                 }
-                // staying in: noop
+            // staying in: noop
             } else {
-                if let Some(index) = last_zero { // exiting
-                    if i - 1 - index > hi - lo {  // new best range
+                if let Some(index) = last_zero {
+                    // exiting
+                    if i - 1 - index > hi - lo {
+                        // new best range
                         hi = i - 1;
                         lo = index;
                     }
@@ -229,8 +231,10 @@ impl fmt::Display for AAAAData {
             }
         }
 
-        if let Some(index) = last_zero { // range may run to the end
-            if quibbles.len() - 1 - index > hi - lo {  // new best range
+        if let Some(index) = last_zero {
+            // range may run to the end
+            if quibbles.len() - 1 - index > hi - lo {
+                // new best range
                 hi = quibbles.len() - 1;
                 lo = index;
             }
@@ -247,13 +251,11 @@ impl fmt::Display for AAAAData {
             }
 
             sep = "::";
-            for quibble in quibbles[hi+1..quibbles.len()].iter() {
+            for quibble in quibbles[hi + 1..quibbles.len()].iter() {
                 fmt_str.push_str(sep);
                 fmt_str.push_str(&format!("{:x}", quibble));
                 sep = ":";
             }
-
-
         } else {
             for quibble in quibbles.iter() {
                 fmt_str.push_str(sep);
