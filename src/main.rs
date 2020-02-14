@@ -2,7 +2,7 @@
 extern crate clap;
 use clap::{App, Arg};
 
-use lud::{Config, run};
+use lud::{run, Config};
 
 fn main() {
     let matches = App::new("lud")
