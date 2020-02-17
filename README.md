@@ -25,16 +25,16 @@ Usage
 --
 
 ```console
-$ lud --help
-lud 0.2.0
+lud 0.3.1
 Joshua Crowgey
 DNS Lookup Client
 
 USAGE:
-    lud [OPTIONS] <name>
+    lud [FLAGS] [OPTIONS] <name>
 
 FLAGS:
     -h, --help       Prints help information
+    -r, --raw        Print the raw reply, no parsing
     -V, --version    Prints version information
 
 OPTIONS:

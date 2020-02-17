@@ -37,7 +37,7 @@ fn main() {
             Arg::with_name("raw")
                 .short("r")
                 .long("raw")
-                .help("print the raw reply, no parsing")
+                .help("Print the raw reply, no parsing")
                 .required(false)
                 .takes_value(false),
         )
