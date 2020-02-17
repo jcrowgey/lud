@@ -15,11 +15,13 @@ mod utils;
 use message::Message;
 use std::io;
 
-pub fn send_query(mut recv_buf: &mut [u8], name: String, qtype: String, resolver: String) -> io::Result<usize> {
-    let mut name: Vec<String> = name
-        .split(".")
-        .map(|s| s.to_string())
-        .collect();
+pub fn send_query(
+    mut recv_buf: &mut [u8],
+    name: String,
+    qtype: String,
+    resolver: String,
+) -> io::Result<usize> {
+    let mut name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
     name.push("".to_string());
 
     let q_message = Message::new(name, qtype);

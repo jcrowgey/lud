@@ -2,7 +2,7 @@
 extern crate clap;
 use clap::{App, Arg};
 
-use lud::{send_query, message, resconf};
+use lud::{message, resconf, send_query};
 
 use std::process;
 
@@ -39,12 +39,18 @@ fn main() {
                 .long("raw")
                 .help("print the raw reply, no parsing")
                 .required(false)
-                .takes_value(false)
+                .takes_value(false),
         )
         .get_matches();
 
-    let name = matches.value_of("name").map(String::from).expect("A name to lookup is required");
-    let qtype = matches.value_of("qtype").map(String::from).unwrap_or("A".to_string());
+    let name = matches
+        .value_of("name")
+        .map(String::from)
+        .expect("A name to lookup is required");
+    let qtype = matches
+        .value_of("qtype")
+        .map(String::from)
+        .unwrap_or("A".to_string());
     let resolver;
     match matches.value_of("server").map(String::from) {
         Some(server) => {
@@ -61,7 +67,7 @@ fn main() {
     if raw {
         let mut sep = "";
         for (i, b) in recv_buf[..received].iter().enumerate() {
-            if i%2 == 0 {
+            if i % 2 == 0 {
                 print!("{}", sep);
                 sep = " "
             }
@@ -71,6 +77,6 @@ fn main() {
         process::exit(0);
     }
 
-    let message = message::Message::from_wire(recv_buf, received);
+    let message = message::Message::from_wire(&recv_buf[..received]);
     println!("{}", message);
 }

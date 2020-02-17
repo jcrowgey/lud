@@ -50,15 +50,15 @@ impl From<bool> for QR {
     }
 }
 
-struct MessageMeta {
-    qr: QR,
-    opcode: u8,
-    aa: bool,
-    tc: bool,
-    rd: bool,
-    ra: bool,
-    z: u8,
-    rcode: RCode,
+pub struct MessageMeta {
+    pub qr: QR,
+    pub opcode: u8,
+    pub aa: bool,
+    pub tc: bool,
+    pub rd: bool,
+    pub ra: bool,
+    pub z: u8,
+    pub rcode: RCode,
 }
 
 impl MessageMeta {
@@ -102,16 +102,16 @@ impl fmt::Display for MessageMeta {
 }
 
 pub struct Message {
-    id: u16,
-    meta: MessageMeta,
-    qdcount: u16,
-    ancount: u16,
-    nscount: u16,
-    arcount: u16,
-    question: Vec<Question>,
-    answer: Vec<RR>,
-    authority: Vec<RR>,
-    additional: Vec<RR>,
+    pub id: u16,
+    pub meta: MessageMeta,
+    pub qdcount: u16,
+    pub ancount: u16,
+    pub nscount: u16,
+    pub arcount: u16,
+    pub question: Vec<Question>,
+    pub answer: Vec<RR>,
+    pub authority: Vec<RR>,
+    pub additional: Vec<RR>,
 }
 
 impl fmt::Display for Message {
@@ -150,8 +150,8 @@ impl fmt::Display for Message {
 }
 
 impl Message {
-    pub fn from_wire(buf: [u8; DNS_MSG_MAX], len: usize) -> Message {
-        let mut m_reply: &[u8] = &buf[..len];
+    pub fn from_wire(buf: &[u8]) -> Message {
+        let mut m_reply: &[u8] = &buf[..buf.len()];
         let mut message = Message {
             id: m_reply.read_u16::<BigEndian>().unwrap(),
             meta: MessageMeta::new(m_reply.read_u16::<BigEndian>().unwrap()),
