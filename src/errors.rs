@@ -14,7 +14,7 @@ impl error::Error for ParseError {
         "invalid rrtype"
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         None
     }
 }
