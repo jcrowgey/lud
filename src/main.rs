@@ -2,7 +2,9 @@
 extern crate clap;
 use clap::{App, Arg};
 
-use lud::{run, Config};
+use lud::{send_query, message, resconf};
+
+use std::process;
 
 fn main() {
     let matches = App::new("lud")
@@ -31,12 +33,44 @@ fn main() {
                 .required(false)
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("raw")
+                .short("r")
+                .long("raw")
+                .help("print the raw reply, no parsing")
+                .required(false)
+                .takes_value(false)
+        )
         .get_matches();
 
-    let config = Config {
-        name: matches.value_of("name").map(String::from),
-        server: matches.value_of("server").map(String::from),
-        qtype: matches.value_of("qtype").map(String::from),
-    };
-    run(config);
+    let name = matches.value_of("name").map(String::from).expect("A name to lookup is required");
+    let qtype = matches.value_of("qtype").map(String::from).unwrap_or("A".to_string());
+    let resolver;
+    match matches.value_of("server").map(String::from) {
+        Some(server) => {
+            resolver = server + ":53";
+        }
+        _ => {
+            resolver = resconf::get_resolver().to_string() + ":53";
+        }
+    }
+    let raw = matches.is_present("raw");
+    let mut recv_buf = [0u8; message::DNS_MSG_MAX];
+    let send_res = send_query(&mut recv_buf, name, qtype, resolver);
+    let received = send_res.unwrap();
+    if raw {
+        let mut sep = "";
+        for (i, b) in recv_buf[..received].iter().enumerate() {
+            if i%2 == 0 {
+                print!("{}", sep);
+                sep = " "
+            }
+            print!("{:02x}", b);
+        }
+        println!();
+        process::exit(0);
+    }
+
+    let message = message::Message::from_wire(recv_buf, received);
+    println!("{}", message);
 }
