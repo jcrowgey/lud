@@ -14,6 +14,19 @@ pub enum QType {
     ANY,   //  255 A request for all records
 }
 
+impl fmt::Display for QType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            QType::RRType(rrt) => {
+                write!(f, "{:?}", rrt)
+            }
+            _ => {
+                write!(f, "{:?}", self)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ParseError;
 impl fmt::Display for ParseError {
@@ -117,7 +130,7 @@ impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}\tQTYPE: {:?}; CLASS: {:?}",
+            "{}\tQTYPE: {:}; CLASS: {:?}",
             self.qname.join("."),
             self.qtype,
             self.qclass
