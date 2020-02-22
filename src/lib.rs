@@ -59,3 +59,57 @@ pub fn send_query(
     sock.send_to(&buf, resolver).expect("Failed to send");
     sock.recv(&mut recv_buf)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ascii_domain() {
+        let ascii_domain = "google.com".to_string();
+        let expected_labels = vec!["google".to_string(), "com".to_string(), "".to_string()];
+
+        let parsed_labels = parse_name(ascii_domain);
+        assert_eq!(expected_labels, parsed_labels);
+    }
+
+    #[test]
+    fn test_valid_idn() {
+        let unicode_domain = "са.com".to_string();
+        let expected_labels = vec!["xn--80a7a".to_string(), "com".to_string(), "".to_string()];
+
+        let parsed_labels = parse_name(unicode_domain);
+        assert_eq!(expected_labels, parsed_labels);
+    }
+
+    #[test]
+    fn test_valid_idn_tld() {
+        let unicode_domain = "са.中國".to_string();
+        let expected_labels = vec![
+            "xn--80a7a".to_string(),
+            "xn--fiqz9s".to_string(),
+            "".to_string(),
+        ];
+
+        let parsed_labels = parse_name(unicode_domain);
+        assert_eq!(expected_labels, parsed_labels);
+    }
+
+    #[test]
+    fn test_punycode_domain() {
+        let punycode_domain = "xn--80a7a.com".to_string();
+        let expected_labels = vec!["xn--80a7a".to_string(), "com".to_string(), "".to_string()];
+
+        let parsed_labels = parse_name(punycode_domain);
+        assert_eq!(expected_labels, parsed_labels);
+    }
+
+    #[test]
+    fn test_invalid_idn() {
+        let invalid_unicode_domain = "xn--са.com".to_string();
+        let expected_labels = vec!["xn--са".to_string(), "com".to_string(), "".to_string()];
+
+        let parsed_labels = parse_name(invalid_unicode_domain);
+        assert_eq!(expected_labels, parsed_labels);
+    }
+}
