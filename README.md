@@ -6,7 +6,8 @@ lud
 A command-line DNS client inspired by dig, written in rust, a hobby project.
 Unlike dig, lud conforms to the POSIX flag specification for its invocation.
 
-Because lud is in part intended for educational value, all information in the reply is printed automatically including additional or nameserver records.
+Because lud is in part intended for educational value, all information in the
+reply is printed automatically including additional or nameserver records.
 
 Status
 --
@@ -15,6 +16,8 @@ Status
   - [x] nice display for A records
   - [x] nice display for the most popular RRTypes
   - [x] allow the user to specify the resolver
+  - [x] allow FQDN notation in names
+  - [x] allow a direct query against the DNS root
   - [ ] allow the user to specify query flags
   - [ ] nice display for all other RRTypes
   - [ ] support EDNS
@@ -25,7 +28,7 @@ Usage
 --
 
 ```console
-lud 0.3.1
+lud 0.3.2
 Joshua Crowgey
 DNS Lookup Client
 
@@ -103,4 +106,21 @@ cloudlflare.com	QTYPE: A; CLASS: 1
 Answer
 cloudlflare.com	A	IN	TTL: 10631, RDLEN: 4
 67.227.226.240
+```
+
+The DNS root can be queried directly using a single . as the name:
+
+```console
+$ lud -q SOA .
+ID: 11068
+QR: R; Opcode: 0
+FLAGS: AA false; TC false; RD: true; RA: true; Z: 0; NoError
+QDCOUNT 1; ANCOUNT 1; NSCOUNT 0; ARCOUNT 0
+
+Question
+	QTYPE: SOA; CLASS: 1
+
+Answer
+	SOA	IN	TTL: 53433, RDLEN: 64
+a.root-servers.net	nstld.verisign-grs.com	2020022101	1800	900	604800
 ```
