@@ -1,4 +1,5 @@
 extern crate byteorder;
+extern crate idna;
 extern crate rand;
 extern crate resolv_conf;
 
@@ -15,24 +16,42 @@ mod utils;
 use message::Message;
 use std::io;
 
-pub fn send_query(
-    mut recv_buf: &mut [u8],
-    mut name: String,
-    qtype: String,
-    resolver: String,
-) -> io::Result<usize> {
+pub fn parse_name(mut name: String) -> Vec<String> {
+    // XXX: name really needs to be bytes
     if !name.ends_with(".") {
         name.push('.');
     }
 
-    // XXX: name really needs to be bytes
-    let mut name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
+    let mut labels: Vec<String> = name
+        .split(".")
+        .map(|s| {
+            match idna::domain_to_ascii(&s.to_string()) {
+                Ok(l) => l,
+                Err(e) => {
+                    println!("error parsing label {}: {:?}", s, e);
+                    // default to input label if it can't be parsed
+                    s.to_string()
+                }
+            }
+        })
+        .collect();
 
-    if name[0] == "" { // this is query against the root
-        name.pop();
+    if labels[0] == "" {
+        // this is query against the root
+        labels.pop();
     }
 
-    let q_message = Message::new(name, qtype);
+    return labels;
+}
+
+pub fn send_query(
+    mut recv_buf: &mut [u8],
+    name: String,
+    qtype: String,
+    resolver: String,
+) -> io::Result<usize> {
+    let labels = parse_name(name);
+    let q_message = Message::new(labels, qtype);
     let buf = q_message.to_wire();
 
     let sock = UdpSocket::bind("0.0.0.0:0").expect("Couldn't bind to this address");
