@@ -17,12 +17,14 @@ use std::io;
 
 pub fn send_query(
     mut recv_buf: &mut [u8],
-    name: String,
+    mut name: String,
     qtype: String,
     resolver: String,
 ) -> io::Result<usize> {
-    let mut name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
-    name.push("".to_string());
+    if !name.ends_with(".") {
+        name.push('.');
+    }
+    let name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
 
     let q_message = Message::new(name, qtype);
     let buf = q_message.to_wire();
