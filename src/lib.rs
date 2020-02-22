@@ -24,7 +24,13 @@ pub fn send_query(
     if !name.ends_with(".") {
         name.push('.');
     }
-    let name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
+
+    // XXX: name really needs to be bytes
+    let mut name: Vec<String> = name.split(".").map(|s| s.to_string()).collect();
+
+    if name[0] == "" { // this is query against the root
+        name.pop();
+    }
 
     let q_message = Message::new(name, qtype);
     let buf = q_message.to_wire();
