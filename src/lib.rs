@@ -40,8 +40,7 @@ pub fn parse_name(mut name: String) -> Vec<String> {
         // this is query against the root
         labels.pop();
     }
-
-    return labels;
+    labels
 }
 
 pub fn send_query(
