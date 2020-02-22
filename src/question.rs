@@ -1,5 +1,5 @@
-use crate::utils::{byte_combine, extract_name};
 use crate::rr::RRType;
+use crate::utils::{byte_combine, extract_name};
 use std::convert::{AsRef, TryFrom};
 use std::error;
 use std::fmt;
@@ -17,12 +17,8 @@ pub enum QType {
 impl fmt::Display for QType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            QType::RRType(rrt) => {
-                write!(f, "{:?}", rrt)
-            }
-            _ => {
-                write!(f, "{:?}", self)
-            }
+            QType::RRType(rrt) => write!(f, "{:?}", rrt),
+            _ => write!(f, "{:?}", self),
         }
     }
 }
@@ -62,15 +58,13 @@ impl TryFrom<String> for QType {
     fn try_from(original: String) -> Result<Self, Self::Error> {
         match RRType::try_from(original.clone()) {
             Ok(rrt) => Ok(QType::RRType(rrt)),
-            Err(_) => {
-                match original.to_uppercase().as_ref() {
-                    "AXFR" => Ok(QType::AXFR),
-                    "MAILB" => Ok(QType::MAILB),
-                    "MAILA" => Ok(QType::MAILA),
-                    "ANY" => Ok(QType::ANY),
-                    _ => Err(ParseError),
-                }
-            }
+            Err(_) => match original.to_uppercase().as_ref() {
+                "AXFR" => Ok(QType::AXFR),
+                "MAILB" => Ok(QType::MAILB),
+                "MAILA" => Ok(QType::MAILA),
+                "ANY" => Ok(QType::ANY),
+                _ => Err(ParseError),
+            },
         }
     }
 }
@@ -79,12 +73,10 @@ impl TryFrom<u16> for QType {
     type Error = ParseError;
     fn try_from(original: u16) -> Result<Self, Self::Error> {
         match original {
-            1..=251 => {
-                match RRType::try_from(original) {
-                    Ok(rrt) => Ok(QType::RRType(rrt)),
-                    Err(_) => Err(ParseError),
-                }
-            }
+            1..=251 => match RRType::try_from(original) {
+                Ok(rrt) => Ok(QType::RRType(rrt)),
+                Err(_) => Err(ParseError),
+            },
             252 => Ok(QType::AXFR),
             253 => Ok(QType::MAILB),
             254 => Ok(QType::MAILA),
