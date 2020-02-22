@@ -40,7 +40,8 @@ fn parse_cli<'a>() -> ArgMatches<'a> {
                 .help("Print the raw reply, no parsing")
                 .required(false)
                 .takes_value(false),
-        ).get_matches()
+        )
+        .get_matches()
 }
 
 fn main() {
