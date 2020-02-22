@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate clap;
-use clap::{App, Arg};
+use clap::{App, Arg, ArgMatches};
 
 use lud::{message, resconf, send_query};
 
 use std::process;
 
-fn main() {
-    let matches = App::new("lud")
+fn parse_cli<'a>() -> ArgMatches<'a> {
+    App::new("lud")
         .version(crate_version!())
         .about("DNS Lookup Client")
         .author("Joshua Crowgey")
@@ -40,19 +40,22 @@ fn main() {
                 .help("Print the raw reply, no parsing")
                 .required(false)
                 .takes_value(false),
-        )
-        .get_matches();
+        ).get_matches()
+}
 
-    let name = matches
+fn main() {
+    let cli = parse_cli();
+
+    let name = cli
         .value_of("name")
         .map(String::from)
         .expect("A name to lookup is required");
-    let qtype = matches
+    let qtype = cli
         .value_of("qtype")
         .map(String::from)
         .unwrap_or("A".to_string());
     let resolver;
-    match matches.value_of("server").map(String::from) {
+    match cli.value_of("server").map(String::from) {
         Some(server) => {
             resolver = server + ":53";
         }
@@ -60,7 +63,7 @@ fn main() {
             resolver = resconf::get_resolver().to_string() + ":53";
         }
     }
-    let raw = matches.is_present("raw");
+    let raw = cli.is_present("raw");
     let mut recv_buf = [0u8; message::DNS_MSG_MAX];
     let send_res = send_query(&mut recv_buf, name, qtype, resolver);
     let received = send_res.unwrap();
