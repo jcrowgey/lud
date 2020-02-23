@@ -1,4 +1,5 @@
 use byteorder::{BigEndian, ReadBytesExt};
+use std::error;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
@@ -150,7 +151,7 @@ impl fmt::Display for Message {
 }
 
 impl Message {
-    pub fn from_wire(buf: &[u8]) -> Message {
+    pub fn from_wire(buf: &[u8]) -> Result<Message, &dyn error::Error>  {
         let mut m_reply: &[u8] = &buf[..buf.len()];
         let mut message = Message {
             id: m_reply.read_u16::<BigEndian>().unwrap(),
@@ -165,16 +166,16 @@ impl Message {
             additional: Vec::new(),
         };
 
-        let (question, offset) = extract_questions(&buf, 12, message.qdcount);
-        let (answer, offset) = extract_rrset(&buf, offset, message.ancount);
-        let (authority, offset) = extract_rrset(&buf, offset, message.nscount);
-        let (additional, _offset) = extract_rrset(&buf, offset, message.arcount);
+        let (question, offset) = extract_questions(&buf, 12, message.qdcount)?;
+        let (answer, offset) = extract_rrset(&buf, offset, message.ancount)?;
+        let (authority, offset) = extract_rrset(&buf, offset, message.nscount)?;
+        let (additional, _offset) = extract_rrset(&buf, offset, message.arcount)?;
 
         message.question = question;
         message.answer = answer;
         message.authority = authority;
         message.additional = additional;
-        message
+        Ok(message)
     }
 
     pub fn to_wire(&self) -> Vec<u8> {
@@ -243,30 +244,30 @@ impl Message {
     }
 }
 
-fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> (Vec<RR>, usize) {
+fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> Result<(Vec<RR>, usize), &dyn error::Error> {
     let mut idx = offset;
     let mut processed_rrs = 0;
     let mut rrset = Vec::new();
 
     while processed_rrs < rrcount {
-        let (rr, l_idx) = RR::from_wire(buf, idx);
+        let (rr, l_idx) = RR::from_wire(buf, idx)?;
         rrset.push(rr);
         idx = l_idx;
         processed_rrs += 1;
     }
-    (rrset, idx) // index of next section
+    Ok((rrset, idx)) // index of next section
 }
 
-fn extract_questions(reply: &[u8], mut offset: usize, qdcount: u16) -> (Vec<Question>, usize) {
+fn extract_questions(reply: &[u8], mut offset: usize, qdcount: u16) -> Result<(Vec<Question>, usize), &dyn error::Error> {
     let mut questions_processed = 0;
     let mut questions: Vec<Question> = Vec::new();
     while questions_processed < qdcount {
-        let (question, l_offset) = Question::from_wire(reply, offset);
+        let (question, l_offset) = Question::from_wire(reply, offset)?;
         offset = l_offset;
         questions.push(question);
         questions_processed += 1;
     }
-    (questions, offset) // offset is index of next section
+    Ok((questions, offset)) // offset is index of next section
 }
 
 #[cfg(test)]

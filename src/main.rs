@@ -81,6 +81,8 @@ fn main() {
         process::exit(0);
     }
 
-    let message = message::Message::from_wire(&recv_buf[..received]);
-    println!("{}", message);
+    match message::Message::from_wire(&recv_buf[..received]) {
+        Ok(message) => println!("{}", message),
+        Err(e) => println!("Failed to parse message: {:?}", e),
+    }
 }

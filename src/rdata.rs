@@ -1,6 +1,7 @@
 use crate::rr::RRType;
 use crate::utils::extract_name;
 use std::{fmt, str};
+use std::error;
 
 pub struct AData {
     address: [u8; 4],
@@ -39,9 +40,9 @@ pub struct NSData {
 }
 
 impl NSData {
-    pub fn from_wire(buf: &[u8], offset: usize) -> NSData {
-        let (nsdname, _) = extract_name(buf, offset);
-        NSData { nsdname: nsdname }
+    pub fn from_wire(buf: &[u8], offset: usize) -> Result<NSData, &dyn error::Error> {
+        let (nsdname, _) = extract_name(buf, offset)?;
+        Ok(NSData { nsdname: nsdname })
     }
 }
 
@@ -56,9 +57,9 @@ pub struct CNAMEData {
 }
 
 impl CNAMEData {
-    pub fn from_wire(buf: &[u8], offset: usize) -> CNAMEData {
-        let (cname, _) = extract_name(buf, offset);
-        CNAMEData { cname: cname }
+    pub fn from_wire(buf: &[u8], offset: usize) -> Result<CNAMEData, &dyn error::Error> {
+        let (cname, _) = extract_name(buf, offset)?;
+        Ok(CNAMEData { cname: cname })
     }
 }
 
@@ -78,9 +79,9 @@ pub struct SOAData {
 }
 
 impl SOAData {
-    pub fn from_wire(buf: &[u8], offset: usize) -> SOAData {
-        let (mname, offset) = extract_name(buf, offset);
-        let (rname, offset) = extract_name(buf, offset);
+    pub fn from_wire(buf: &[u8], offset: usize) -> Result<SOAData, &dyn error::Error> {
+        let (mname, offset) = extract_name(buf, offset)?;
+        let (rname, offset) = extract_name(buf, offset)?;
         let serial = (buf[offset] as u32) << 24
             | (buf[offset + 1] as u32) << 16
             | (buf[offset + 2] as u32) << 8
@@ -100,14 +101,14 @@ impl SOAData {
             | (buf[offset + 1] as u32) << 16
             | (buf[offset + 2] as u32) << 8
             | (buf[offset + 3] as u32);
-        SOAData {
+        Ok(SOAData {
             mname: mname,
             rname: rname,
             serial: serial,
             refresh: refresh,
             retry: retry,
             expire: expire,
-        }
+        })
     }
 }
 
@@ -132,13 +133,13 @@ pub struct MXData {
 }
 
 impl MXData {
-    pub fn from_wire(buf: &[u8], offset: usize) -> MXData {
+    pub fn from_wire(buf: &[u8], offset: usize) -> Result<MXData, &dyn error::Error> {
         let preference = (buf[offset] as u16) << 8 | (buf[offset + 1] as u16);
-        let (exchange, _) = extract_name(buf, offset + 2);
-        MXData {
+        let (exchange, _) = extract_name(buf, offset + 2)?;
+        Ok(MXData {
             preference: preference,
             exchange: exchange,
-        }
+        })
     }
 }
 
@@ -153,9 +154,9 @@ pub struct PTRData {
 }
 
 impl PTRData {
-    pub fn from_wire(buf: &[u8], offset: usize) -> PTRData {
-        let (ptrdname, _) = extract_name(buf, offset);
-        PTRData { ptrdname: ptrdname }
+    pub fn from_wire(buf: &[u8], offset: usize) -> Result<PTRData, &dyn error::Error> {
+        let (ptrdname, _) = extract_name(buf, offset)?;
+        Ok(PTRData { ptrdname: ptrdname })
     }
 }
 
@@ -297,17 +298,32 @@ impl fmt::Display for RData {
 }
 
 impl RData {
-    pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> RData {
+    pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> Result<RData, &dyn error::Error> {
         match rrtype {
-            RRType::A => RData::A(AData::from_wire(buf, offset)),
-            RRType::NS => RData::NS(NSData::from_wire(buf, offset)),
-            RRType::CNAME => RData::CNAME(CNAMEData::from_wire(buf, offset)),
-            RRType::SOA => RData::SOA(SOAData::from_wire(buf, offset)),
-            RRType::PTR => RData::PTR(PTRData::from_wire(buf, offset)),
-            RRType::MX => RData::MX(MXData::from_wire(buf, offset)),
-            RRType::TXT => RData::TXT(TXTData::from_wire(buf, offset, rdlength)),
-            RRType::AAAA => RData::AAAA(AAAAData::from_wire(buf, offset)),
-            _ => RData::UNKNOWN(rrtype as u16),
+            RRType::A => Ok(RData::A(AData::from_wire(buf, offset))),
+            RRType::NS => {
+                let ns = NSData::from_wire(buf, offset)?;
+                Ok(RData::NS(ns))
+            },
+            RRType::CNAME => {
+                let cname = CNAMEData::from_wire(buf, offset)?;
+                Ok(RData::CNAME(cname))
+            }
+            RRType::SOA => {
+                let soa = SOAData::from_wire(buf, offset)?;
+                Ok(RData::SOA(soa))
+            },
+            RRType::PTR => {
+                let ptr = PTRData::from_wire(buf, offset)?;
+                Ok(RData::PTR(ptr))
+            }
+            RRType::MX => {
+                let mx = MXData::from_wire(buf, offset)?;
+                Ok(RData::MX(mx))
+            }
+            RRType::TXT => Ok(RData::TXT(TXTData::from_wire(buf, offset, rdlength))),
+            RRType::AAAA => Ok(RData::AAAA(AAAAData::from_wire(buf, offset))),
+            _ => Ok(RData::UNKNOWN(rrtype as u16)),
         }
     }
 }

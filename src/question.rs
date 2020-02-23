@@ -93,8 +93,8 @@ pub struct Question {
 }
 
 impl Question {
-    pub fn from_wire(wire: &[u8], mut offset: usize) -> (Question, usize) {
-        let (qname, l_offset) = extract_name(wire, offset);
+    pub fn from_wire(wire: &[u8], mut offset: usize) -> Result<(Question, usize), &dyn error::Error> {
+        let (qname, l_offset) = extract_name(wire, offset)?;
         offset = l_offset;
         let qtype = QType::try_from(byte_combine(wire[offset], wire[offset + 1])).unwrap();
         offset += 2;
@@ -106,7 +106,7 @@ impl Question {
             qtype: qtype,
             qclass: qclass,
         };
-        (q, offset)
+        Ok((q, offset))
     }
 
     pub fn new(qname: Vec<String>, qtype: QType, qclass: u16) -> Question {

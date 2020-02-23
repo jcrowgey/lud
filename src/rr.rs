@@ -1,4 +1,5 @@
 use std::fmt;
+use std::error;
 
 use crate::errors::ParseError;
 use crate::rdata::RData;
@@ -115,17 +116,17 @@ pub struct RR {
 }
 
 impl RR {
-    pub fn from_wire(buf: &[u8], mut offset: usize) -> (RR, usize) {
+    pub fn from_wire(buf: &[u8], mut offset: usize) -> Result<(RR, usize), &dyn error::Error> {
         let mut name = Vec::new();
         let name_type = buf[offset] >> 6;
 
         if name_type == 3 {
             let name_offset = bytes_to_name_offset(buf[offset], buf[offset + 1]);
-            let (mut ref_name, _loffset) = extract_name(buf, name_offset as usize);
+            let (mut ref_name, _loffset) = extract_name(buf, name_offset as usize)?;
             name.append(&mut ref_name);
             offset += 2;
         } else if name_type == 0 {
-            let (mut ref_name, new_offset) = extract_name(buf, offset);
+            let (mut ref_name, new_offset) = extract_name(buf, offset)?;
             name.append(&mut ref_name);
             offset = new_offset;
         } else {
@@ -145,7 +146,7 @@ impl RR {
         let rdlength = byte_combine(buf[offset], buf[offset + 1]) as usize;
         offset += 2;
 
-        let rdata_parsed = RData::from_wire(rrtype, buf, offset, rdlength);
+        let rdata_parsed = RData::from_wire(rrtype, buf, offset, rdlength)?;
         let rr = RR {
             name: name,
             rrtype: rrtype,
@@ -156,7 +157,7 @@ impl RR {
         };
 
         offset += rdlength;
-        (rr, offset)
+        Ok((rr, offset))
     }
 }
 
