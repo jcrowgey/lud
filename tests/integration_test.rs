@@ -3,7 +3,6 @@ extern crate lud;
 
 use lud::message::Message;
 
-
 // TODO: more of these and with more detail
 #[test]
 fn test_parse_message_A() {
