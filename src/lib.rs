@@ -16,7 +16,7 @@ mod utils;
 use message::Message;
 use std::io;
 
-pub fn parse_name(mut name: String) -> Vec<String> {
+fn parse_name(mut name: String) -> Vec<String> {
     // XXX: name really needs to be bytes
     if !name.ends_with(".") {
         name.push('.');
