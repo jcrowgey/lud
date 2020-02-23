@@ -1,6 +1,6 @@
 [package]
 name = "lud"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Joshua Crowgey <jcrowgey@uw.edu>"]
 edition = "2018"
 

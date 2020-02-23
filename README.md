@@ -18,6 +18,7 @@ Status
   - [x] allow the user to specify the resolver
   - [x] allow FQDN notation in names
   - [x] allow a direct query against the DNS root
+  - [x] support Unicode (IDN) domain names
   - [ ] allow the user to specify query flags
   - [ ] nice display for all other RRTypes
   - [ ] support EDNS
@@ -28,7 +29,7 @@ Usage
 --
 
 ```console
-lud 0.3.2
+lud 0.3.3
 Joshua Crowgey
 DNS Lookup Client
 
@@ -123,4 +124,25 @@ Question
 Answer
 	SOA	IN	TTL: 53433, RDLEN: 64
 a.root-servers.net	nstld.verisign-grs.com	2020022101	1800	900	604800
+```
+
+Unicode names are converted to punycode, as illustrated by this query for the
+SOA records corresponding to one of the
+[IDN test domains](https://www.iana.org/domains/reserved) (since the IDN test
+domains are no longer delegated, the query returns an NameError and the SOA
+record for the DNS root):
+
+```
+$ lud -q SOA испытание.
+ID: 17883
+QR: R; Opcode: 0
+FLAGS: AA false; TC false; RD: true; RA: true; Z: 0; NameError
+QDCOUNT 1; ANCOUNT 0; NSCOUNT 1; ARCOUNT 0
+
+Question
+xn--80akhbyknj4f	QTYPE: SOA; CLASS: 1
+
+Authority
+	SOA	IN	TTL: 10800, RDLEN: 64
+a.root-servers.net	nstld.verisign-grs.com	2020022300	1800	900	604800
 ```
