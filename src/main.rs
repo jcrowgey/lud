@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate clap;
 use clap::{App, Arg, ArgMatches};
 
 use lud::{message, resconf, send_query};
@@ -8,7 +6,7 @@ use std::process;
 
 fn parse_cli<'a>() -> ArgMatches<'a> {
     App::new("lud")
-        .version(crate_version!())
+        .version(clap::crate_version!())
         .about("DNS Lookup Client")
         .author("Joshua Crowgey")
         .arg(

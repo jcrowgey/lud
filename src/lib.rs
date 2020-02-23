@@ -1,8 +1,3 @@
-extern crate byteorder;
-extern crate idna;
-extern crate rand;
-extern crate resolv_conf;
-
 use std::net::UdpSocket;
 
 mod errors;

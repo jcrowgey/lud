@@ -3,8 +3,6 @@ use std::io::Read;
 
 use std::net::Ipv4Addr;
 
-extern crate resolv_conf;
-
 const RESOLVCONF_PATH: &str = "/etc/resolv.conf";
 
 pub fn get_resolv_conf() -> resolv_conf::Config {
