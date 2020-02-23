@@ -65,8 +65,8 @@ mod tests {
 
     #[test]
     fn test_ascii_domain() {
-        let ascii_domain = "google.com".to_string();
-        let expected_labels = vec!["google".to_string(), "com".to_string(), "".to_string()];
+        let ascii_domain = "example.com".to_string();
+        let expected_labels = vec!["example".to_string(), "com".to_string(), "".to_string()];
 
         let parsed_labels = parse_name(ascii_domain);
         assert_eq!(expected_labels, parsed_labels);
