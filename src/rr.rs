@@ -1,5 +1,5 @@
-use std::fmt;
 use std::error;
+use std::fmt;
 
 use crate::errors::ParseError;
 use crate::rdata::RData;
@@ -49,7 +49,7 @@ impl TryFrom<u16> for RRType {
             15 => Ok(RRType::MX),
             16 => Ok(RRType::TXT),
             28 => Ok(RRType::AAAA),
-            _ => Err(ParseError),
+            _ => Err(ParseError::InvalidRRType),
         }
     }
 }
@@ -75,7 +75,7 @@ impl TryFrom<String> for RRType {
             "MX" => Ok(RRType::MX),       // 15 mail exchange
             "TXT" => Ok(RRType::TXT),     // 16 text strings
             "AAAA" => Ok(RRType::AAAA),   // 28 ipv6 host address
-            _ => Err(ParseError),
+            _ => Err(ParseError::InvalidRRType),
         }
     }
 }
@@ -96,7 +96,7 @@ impl TryFrom<u16> for Class {
             2 => Ok(Class::CS),
             3 => Ok(Class::CH),
             4 => Ok(Class::HS),
-            _ => Err(ParseError),
+            _ => Err(ParseError::InvalidClass),
         }
     }
 }

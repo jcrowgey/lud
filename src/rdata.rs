@@ -1,7 +1,7 @@
 use crate::rr::RRType;
 use crate::utils::extract_name;
-use std::{fmt, str};
 use std::error;
+use std::{fmt, str};
 
 pub struct AData {
     address: [u8; 4],
@@ -298,13 +298,18 @@ impl fmt::Display for RData {
 }
 
 impl RData {
-    pub fn from_wire(rrtype: RRType, buf: &[u8], offset: usize, rdlength: usize) -> Result<RData, &dyn error::Error> {
+    pub fn from_wire(
+        rrtype: RRType,
+        buf: &[u8],
+        offset: usize,
+        rdlength: usize,
+    ) -> Result<RData, &dyn error::Error> {
         match rrtype {
             RRType::A => Ok(RData::A(AData::from_wire(buf, offset))),
             RRType::NS => {
                 let ns = NSData::from_wire(buf, offset)?;
                 Ok(RData::NS(ns))
-            },
+            }
             RRType::CNAME => {
                 let cname = CNAMEData::from_wire(buf, offset)?;
                 Ok(RData::CNAME(cname))
@@ -312,7 +317,7 @@ impl RData {
             RRType::SOA => {
                 let soa = SOAData::from_wire(buf, offset)?;
                 Ok(RData::SOA(soa))
-            },
+            }
             RRType::PTR => {
                 let ptr = PTRData::from_wire(buf, offset)?;
                 Ok(RData::PTR(ptr))

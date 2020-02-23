@@ -1,7 +1,7 @@
 use byteorder::{BigEndian, ReadBytesExt};
-use std::error;
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::error;
 use std::fmt;
 
 use rand::random;
@@ -151,7 +151,7 @@ impl fmt::Display for Message {
 }
 
 impl Message {
-    pub fn from_wire(buf: &[u8]) -> Result<Message, &dyn error::Error>  {
+    pub fn from_wire(buf: &[u8]) -> Result<Message, &dyn error::Error> {
         let mut m_reply: &[u8] = &buf[..buf.len()];
         let mut message = Message {
             id: m_reply.read_u16::<BigEndian>().unwrap(),
@@ -244,7 +244,11 @@ impl Message {
     }
 }
 
-fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> Result<(Vec<RR>, usize), &dyn error::Error> {
+fn extract_rrset(
+    buf: &[u8],
+    offset: usize,
+    rrcount: u16,
+) -> Result<(Vec<RR>, usize), &dyn error::Error> {
     let mut idx = offset;
     let mut processed_rrs = 0;
     let mut rrset = Vec::new();
@@ -258,7 +262,11 @@ fn extract_rrset(buf: &[u8], offset: usize, rrcount: u16) -> Result<(Vec<RR>, us
     Ok((rrset, idx)) // index of next section
 }
 
-fn extract_questions(reply: &[u8], mut offset: usize, qdcount: u16) -> Result<(Vec<Question>, usize), &dyn error::Error> {
+fn extract_questions(
+    reply: &[u8],
+    mut offset: usize,
+    qdcount: u16,
+) -> Result<(Vec<Question>, usize), &dyn error::Error> {
     let mut questions_processed = 0;
     let mut questions: Vec<Question> = Vec::new();
     while questions_processed < qdcount {

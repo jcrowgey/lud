@@ -1,3 +1,4 @@
+use crate::errors::ParseError;
 use std::error;
 
 pub fn byte_combine(a: u8, b: u8) -> u16 {
@@ -8,7 +9,10 @@ pub fn bytes_to_name_offset(a: u8, b: u8) -> usize {
     (byte_combine(a, b) & 0b11_1111_1111_1111) as usize
 }
 
-pub fn extract_name(bytes: &[u8], mut offset: usize) -> Result<(Vec<String>, usize), &dyn error::Error> {
+pub fn extract_name(
+    bytes: &[u8],
+    mut offset: usize,
+) -> Result<(Vec<String>, usize), &dyn error::Error> {
     let mut name = Vec::new();
     loop {
         let label_len = bytes[offset] as usize;
@@ -19,6 +23,9 @@ pub fn extract_name(bytes: &[u8], mut offset: usize) -> Result<(Vec<String>, usi
         }
         if (label_len >> 6) == 3 {
             let name_offset = bytes_to_name_offset(bytes[offset], bytes[offset + 1]);
+            if name_offset > offset {
+                return Err(&ParseError::PointerForward);
+            }
             let (mut ref_name, _loffset) = extract_name(bytes, name_offset)?;
             name.append(&mut ref_name);
             break;
